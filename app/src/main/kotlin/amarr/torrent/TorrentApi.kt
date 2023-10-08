@@ -11,7 +11,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 fun Application.torrentApi(amuleClient: AmuleClient) {
-    val service = TorrentService(amuleClient)
+    val service = TorrentService(amuleClient, log)
     val format = Json { encodeDefaults = true }
     routing {
         get("/api/v2/app/webapiVersion") {
@@ -54,6 +54,20 @@ fun Application.torrentApi(amuleClient: AmuleClient) {
         get("/api/v2/torrents/info") {
             val category = call.request.queryParameters["category"]
             call.respondText(format.encodeToString(service.getTorrentInfo(category)), ContentType.Application.Json)
+        }
+        post("/api/v2/torrents/delete") {
+            val params = call.receiveParameters()
+            val hashes = params["hashes"]!!.split("|")
+            val deleteFiles = params["deleteFiles"]
+            call.application.log.debug(
+                "Received delete torrent request with hashes: {}, deleteFiles: {}",
+                hashes,
+                deleteFiles
+            )
+            if (hashes.size == 1 && hashes[0] == "all")
+                service.deleteAllTorrents(deleteFiles)
+            else service.deleteTorrent(hashes, deleteFiles)
+            call.respondText("Ok.")
         }
     }
 }

@@ -23,7 +23,6 @@ lateinit var AMULE_PORT: String
 lateinit var AMULE_HOST: String
 lateinit var AMULE_PASSWORD: String
 lateinit var AMARR_URL: String
-const val REQUESTED_FOLDER = "/requested"
 const val FINISHED_FOLDER = "/finished"
 
 fun main() {
