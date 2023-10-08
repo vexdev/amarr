@@ -1,32 +1,106 @@
 package amarr.amule
 
-import amarr.AMARR_URL
 import amarr.amule.model.Download
 import amarr.amule.model.DownloadPriority
 import amarr.amule.model.DownloadStatus
-import amarr.torznab.model.Feed.Channel.Item
+import amarr.amule.model.SearchFile
 import com.iukonline.amule.ec.v204.ECClientV204
 import com.iukonline.amule.ec.v204.ECCodesV204
 import io.ktor.http.*
-import io.ktor.util.*
-import io.ktor.util.logging.*
+import org.slf4j.Logger
+import java.net.Socket
 
+/**
+ * ECClients are not thread safe, so we need to synchronize access to it.
+ */
 @OptIn(ExperimentalStdlibApi::class)
-class AmuleClient(private val client: ECClientV204, private val log: Logger) {
-    private val searchCache = mutableMapOf<String, SearchResult>()
+class AmuleClient(
+    private val amuleHost: String,
+    private val amulePort: Int,
+    private val amulePassword: String,
+    private val log: Logger
+) : AutoCloseable {
 
-    fun search(query: String): List<Item> {
-        val cachedResult = getCachedResult(query)
-        if (cachedResult != null) {
-            log.debug("Returning cached result")
-            return cachedResult
+    lateinit var client: ECClientV204
+    lateinit var socket: Socket
+
+    fun connect() {
+        synchronized(this) {
+            log.debug("Connecting to amule at {}:{}", amuleHost, amulePort)
+            client = ECClientV204()
+            client.setClientName("amarr")
+            client.setClientVersion("SNAPSHOT")
+            client.setPassword(amulePassword)
+            socket = Socket(amuleHost, amulePort)
+            client.setSocket(socket)
+            if (log.isTraceEnabled)
+                client.setTracer(System.err)
         }
-        return performSearch(query)
     }
 
-    fun stats() = client.stats.toString()
+    override fun close() {
+        synchronized(this) {
+            log.debug("Closing connection to amule")
+            socket.close()
+        }
+    }
 
-    private fun performSearch(query: String): List<Item> {
+    private val searchCache = mutableMapOf<String, SearchResult>()
+
+    fun search(query: String): List<SearchFile> {
+        synchronized(this) {
+            val cachedResult = getCachedResult(query)
+            if (cachedResult != null) {
+                log.debug("Returning cached result")
+                return cachedResult
+            }
+            return performSearch(query)
+        }
+    }
+
+    fun download(magnet: String) {
+        synchronized(this) {
+            log.debug("Downloading magnet link: {}", magnet)
+            val magnetLink = try {
+                parseMagnetLink(magnet)
+            } catch (e: Exception) {
+                log.info("Invalid magnet link for Amarr: {}", magnet, e)
+                return
+            }
+            client.addED2KLink(magnetLink.toEd2kLink())
+        }
+    }
+
+    fun stats() = synchronized(this) { client.stats.toString() }
+
+    fun listDownloads() = synchronized(this) {
+        client
+            .downloadQueue
+            .values
+            .map { download ->
+                Download(
+                    hash = download.hash.toHexString(),
+                    fileName = download.fileName,
+                    ed2kLink = download.ed2kLink,
+                    status = DownloadStatus.fromValue(download.status),
+                    prio = DownloadPriority.fromValue(download.prio),
+                    cat = download.cat,
+                    sourceCount = download.sourceCount,
+                    metID = download.metID,
+                    sourceA4AF = download.sourceA4AF,
+                    sourceXfer = download.sourceXfer,
+                    sourceNotCurrent = download.sourceNotCurrent,
+                    sizeXfer = download.sizeXfer,
+                    sizeFull = download.sizeFull,
+                    sizeDone = download.sizeDone,
+                    speed = download.speed,
+                    lastSeenComp = download.lastSeenComp,
+                    lastRecv = download.lastRecv,
+                )
+            }
+    }
+
+    private fun performSearch(query: String): List<SearchFile> {
         val searchResponse = client.searchStart(query, null, null, -1, -1, 0, ECCodesV204.EC_SEARCH_GLOBAL)
         log.debug("Search response: {}", searchResponse)
         log.debug("Search in progress...")
@@ -37,26 +111,20 @@ class AmuleClient(private val client: ECClientV204, private val log: Logger) {
 
         return searchResults.resultMap.values
             .map { result ->
-                Item(
-                    title = result.fileName,
-                    enclosure = Item.Enclosure(
-                        url = AMARR_URL +
-                                "/download" +
-                                "?query=${query.encodeURLParameter()}" +
-                                "&hash=${result.hash.encodeBase64().encodeURLParameter()}",
-                        length = result.sizeFull
-                    ),
-                    attributes = listOf(
-                        Item.TorznabAttribute("category", "1"),
-                        Item.TorznabAttribute("seeders", result.sourceCount.toString()),
-                        Item.TorznabAttribute("peers", result.sourceCount.toString()),
-                        Item.TorznabAttribute("size", result.sizeFull.toString())
-                    )
+                SearchFile(
+                    query = query,
+                    fileName = result.fileName,
+                    hash = result.hash.toHexString(),
+                    sizeFull = result.sizeFull,
+                    sourceCount = result.sourceCount,
+                    sourceXfer = result.sourceXfer,
+                    aaa = result.status,
+                    raw = result
                 )
             }
     }
 
-    private fun getCachedResult(query: String): List<Item>? {
+    private fun getCachedResult(query: String): List<SearchFile>? {
         val searchResult = searchCache[query]
         if (searchResult == null) {
             log.debug("No cached search result found")
@@ -68,36 +136,34 @@ class AmuleClient(private val client: ECClientV204, private val log: Logger) {
             return null
         }
         log.debug("Found cached search result")
-        return searchResult.items
+        return searchResult.files
     }
 
-    fun listDownloads() = client
-        .getDownloadQueue()
-        .values
-        .map { download ->
-            Download(
-                hash = download.hash.toHexString(),
-                fileName = download.fileName,
-                ed2kLink = download.ed2kLink,
-                status = DownloadStatus.fromValue(download.status),
-                prio = DownloadPriority.fromValue(download.prio),
-                cat = download.cat,
-                sourceCount = download.sourceCount,
-                metID = download.metID,
-                sourceA4AF = download.sourceA4AF,
-                sourceXfer = download.sourceXfer,
-                sourceNotCurrent = download.sourceNotCurrent,
-                sizeXfer = download.sizeXfer,
-                sizeFull = download.sizeFull,
-                sizeDone = download.sizeDone,
-                speed = download.speed,
-                lastSeenComp = download.lastSeenComp,
-                lastRecv = download.lastRecv,
+    private fun parseMagnetLink(magnet: String): MagnetLink = magnet
+        .substringAfter("magnet:?")
+        .split("&")
+        .filter { it.matches(Regex(".+=.+")) }
+        .map { val els = it.split("="); els[0] to els[1] }
+        .let { params ->
+            MagnetLink(
+                hash = params.first { it.first == "xt" }.second.substringAfter("urn:ed2k:"),
+                name = params.first { it.first == "dn" }.second.decodeURLPart(),
+                size = params.first { it.first == "xl" }.second.toLong(),
+                trackers = params.filter { it.first == "tr" }.map { it.second.decodeURLPart() }
             )
         }
 
     class SearchResult(
-        val items: List<Item>,
+        val files: List<SearchFile>,
         val ttl: Long,
     )
+
+    class MagnetLink(
+        val hash: String,
+        val name: String,
+        val size: Long,
+        val trackers: List<String>,
+    ) {
+        fun toEd2kLink() = "ed2k://|file|${name.encodeURLParameter()}|$size|$hash|/"
+    }
 }

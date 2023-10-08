@@ -1,8 +1,11 @@
 package amarr.torznab
 
+import amarr.AMARR_URL
 import amarr.amule.AmuleClient
+import amarr.amule.model.SearchFile
 import amarr.torznab.model.Feed
 import amarr.torznab.model.Feed.Channel.Item
+import io.ktor.http.*
 import io.ktor.util.logging.*
 
 class FeedBuilder(private val amuleClient: AmuleClient, private val log: Logger) {
@@ -12,7 +15,7 @@ class FeedBuilder(private val amuleClient: AmuleClient, private val log: Logger)
         return buildFeed(amuleClient.search(query), offset, limit)
     }
 
-    private fun buildFeed(items: List<Item>, offset: Int, limit: Int) = Feed(
+    private fun buildFeed(items: List<SearchFile>, offset: Int, limit: Int) = Feed(
         channel = Feed.Channel(
             response = Feed.Channel.Response(
                 offset = offset,
@@ -21,6 +24,25 @@ class FeedBuilder(private val amuleClient: AmuleClient, private val log: Logger)
             item = items
                 .drop(offset)
                 .take(limit)
+                .map { result ->
+                    Item(
+                        title = result.fileName,
+                        enclosure = Item.Enclosure(
+                            url = AMARR_URL +
+                                    "/download" +
+                                    "?query=${result.query.encodeURLParameter()}" +
+                                    "&hash=${result.hash.encodeURLParameter()}" +
+                                    "&size=${result.sizeFull}",
+                            length = result.sizeFull
+                        ),
+                        attributes = listOf(
+                            Item.TorznabAttribute("category", "1"),
+                            Item.TorznabAttribute("seeders", result.sourceCount.toString()),
+                            Item.TorznabAttribute("peers", result.sourceCount.toString()),
+                            Item.TorznabAttribute("size", result.sizeFull.toString())
+                        )
+                    )
+                }
         )
     )
 

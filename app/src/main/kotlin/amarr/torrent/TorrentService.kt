@@ -28,8 +28,9 @@ class TorrentService(private val amuleClient: AmuleClient, private val log: Logg
                     DownloadPriority.PR_HIGH -> 3
                     else -> -1
                 },
-                state = when (dl.status) {
-                    DownloadStatus.PS_READY -> TorrentState.downloading
+                state = if (dl.sourceXfer > 0) TorrentState.downloading
+                else when (dl.status) {
+                    DownloadStatus.PS_READY -> TorrentState.metaDL
                     DownloadStatus.PS_ERROR -> TorrentState.error
                     DownloadStatus.PS_COMPLETING -> TorrentState.checkingDL
                     DownloadStatus.PS_COMPLETE -> TorrentState.uploading
@@ -40,7 +41,7 @@ class TorrentService(private val amuleClient: AmuleClient, private val log: Logg
 
                     else -> TorrentState.unknown
                 },
-                category = category ?: categoryList.first().name,
+                category = category ?: categoryList.firstOrNull()?.name,
                 save_path = FINISHED_FOLDER,
                 dlspeed = dl.speed,
                 num_seeds = dl.sourceCount,
@@ -60,7 +61,9 @@ class TorrentService(private val amuleClient: AmuleClient, private val log: Logg
     }
 
     fun addTorrent(urls: List<String>, category: String?, paused: String?) {
-        TODO("Not yet implemented")
+        urls.forEach { magnetLink ->
+            amuleClient.download(magnetLink)
+        }
     }
 
     fun deleteTorrent(hashes: List<String>, deleteFiles: String?) {

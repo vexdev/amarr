@@ -5,7 +5,6 @@ import amarr.amule.debugApi
 import amarr.torrent.torrentApi
 import amarr.torznab.torznabApi
 import amarr.tracker.trackerApi
-import com.iukonline.amule.ec.v204.ECClientV204
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.serialization.kotlinx.xml.*
 import io.ktor.server.application.*
@@ -13,11 +12,10 @@ import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import io.ktor.server.plugins.callloging.*
 import io.ktor.server.plugins.contentnegotiation.*
-import io.ktor.server.plugins.defaultheaders.*
 import io.ktor.util.logging.*
 import kotlinx.serialization.json.Json
+import org.slf4j.LoggerFactory
 import org.slf4j.event.Level
-import java.net.Socket
 
 lateinit var AMULE_PORT: String
 lateinit var AMULE_HOST: String
@@ -27,17 +25,22 @@ const val FINISHED_FOLDER = "/finished"
 
 fun main() {
     loadEnv()
-    embeddedServer(
-        Netty, port = 8080
-    ) {
-        app()
-    }.start(wait = true)
+    buildClient(
+        LoggerFactory.getLogger("AmuleClient")
+    ).use { amuleClient ->
+        amuleClient.connect()
+        embeddedServer(
+            Netty, port = 8080
+        ) {
+            app(amuleClient)
+        }.start(wait = true)
+    }
 }
 
-private fun Application.app() {
-    val amuleClient = buildClient(log)
+private fun Application.app(amuleClient: AmuleClient) {
+
     install(CallLogging) {
-        level = Level.INFO
+        level = Level.DEBUG
     }
     install(ContentNegotiation) {
         xml()
@@ -68,12 +71,5 @@ fun loadEnv() {
     }
 }
 
-fun buildClient(logger: Logger): AmuleClient {
-    val client = ECClientV204()
-    client.setClientName("amarr")
-    client.setClientVersion("SNAPSHOT")
-    client.setPassword(AMULE_PASSWORD)
-    val socket = Socket(AMULE_HOST, AMULE_PORT.toInt())
-    client.setSocket(socket)
-    return AmuleClient(client, logger)
-}
+fun buildClient(logger: Logger): AmuleClient = AmuleClient(AMULE_HOST, AMULE_PORT.toInt(), AMULE_PASSWORD, logger)
+
