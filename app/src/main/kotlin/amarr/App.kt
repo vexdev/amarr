@@ -1,15 +1,21 @@
 package amarr
 
+import amarr.amule.AmuleClient
 import amarr.amule.debugApi
+import amarr.torrent.torrentApi
 import amarr.torznab.torznabApi
+import amarr.tracker.trackerApi
 import com.iukonline.amule.ec.v204.ECClientV204
+import io.ktor.serialization.kotlinx.json.*
 import io.ktor.serialization.kotlinx.xml.*
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import io.ktor.server.plugins.callloging.*
 import io.ktor.server.plugins.contentnegotiation.*
-import io.ktor.server.request.*
+import io.ktor.server.plugins.defaultheaders.*
+import io.ktor.util.logging.*
+import kotlinx.serialization.json.Json
 import org.slf4j.event.Level
 import java.net.Socket
 
@@ -22,27 +28,30 @@ const val FINISHED_FOLDER = "/finished"
 
 fun main() {
     loadEnv()
-    val client = buildClient()
-    val socket = Socket(AMULE_HOST, AMULE_PORT.toInt())
-    socket.use {
-        client.setSocket(socket)
-        embeddedServer(
-            Netty, port = 8080
-        ) {
-            app(client)
-        }.start(wait = true)
-    }
+    embeddedServer(
+        Netty, port = 8080
+    ) {
+        app()
+    }.start(wait = true)
 }
 
-private fun Application.app(client: ECClientV204) {
+private fun Application.app() {
+    val amuleClient = buildClient(log)
     install(CallLogging) {
         level = Level.INFO
     }
     install(ContentNegotiation) {
         xml()
+        json(Json {
+            ignoreUnknownKeys = true
+            isLenient = true
+            prettyPrint = true
+        })
     }
-    debugApi(client)
-    torznabApi(client)
+    debugApi(amuleClient)
+    torznabApi(amuleClient)
+    trackerApi(amuleClient)
+    torrentApi(amuleClient)
 }
 
 fun loadEnv() {
@@ -60,10 +69,12 @@ fun loadEnv() {
     }
 }
 
-fun buildClient(): ECClientV204 {
+fun buildClient(logger: Logger): AmuleClient {
     val client = ECClientV204()
     client.setClientName("amarr")
     client.setClientVersion("SNAPSHOT")
     client.setPassword(AMULE_PASSWORD)
-    return client
+    val socket = Socket(AMULE_HOST, AMULE_PORT.toInt())
+    client.setSocket(socket)
+    return AmuleClient(client, logger)
 }

@@ -12,8 +12,10 @@ repositories {
 dependencies {
     implementation(libs.bundles.ktor.server)
     implementation(libs.amule.ec)
+    implementation(libs.bt.bencoding)
     implementation("ch.qos.logback:logback-classic:1.4.11")
     implementation("io.ktor:ktor-server-call-logging-jvm:2.3.4")
+    implementation("io.ktor:ktor-server-default-headers-jvm:2.3.4")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testImplementation("org.junit.jupiter:junit-jupiter-engine:5.9.3")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")

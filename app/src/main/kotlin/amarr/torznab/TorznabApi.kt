@@ -1,19 +1,21 @@
 package amarr.torznab
 
+import amarr.amule.AmuleClient
 import amarr.torznab.model.Caps
 import amarr.torznab.model.Feed
 import amarr.torznab.model.Feed.Channel.Item
 import amarr.torznab.model.Feed.Channel.Item.Enclosure
 import amarr.torznab.model.Feed.Channel.Item.TorznabAttribute
 import amarr.torznab.model.Feed.Channel.Response
-import com.iukonline.amule.ec.v204.ECClientV204
+import io.ktor.http.*
+import io.ktor.http.HttpStatusCode.Companion.OK
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.util.logging.*
 
 
-fun Application.torznabApi(client: ECClientV204) {
+fun Application.torznabApi(client: AmuleClient) {
     val torznabApi = TorznabApi(client, log)
     routing {
         get("/api") {
@@ -35,7 +37,7 @@ fun Application.torznabApi(client: ECClientV204) {
     }
 }
 
-class TorznabApi(client: ECClientV204, private val log: Logger) {
+class TorznabApi(client: AmuleClient, private val log: Logger) {
     private val feedBuilder = FeedBuilder(client, log)
 
     fun handleSearch(call: ApplicationCall): Feed {

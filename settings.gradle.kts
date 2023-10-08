@@ -19,7 +19,9 @@ dependencyResolutionManagement {
             library("ktor-server-content-negotiation", "io.ktor", "ktor-server-content-negotiation").versionRef("ktor")
             library("ktor-serialization-kotlinx-xml", "io.ktor", "ktor-serialization-kotlinx-xml").versionRef("ktor")
             library("ktor-server-call-logging", "io.ktor", "ktor-server-call-logging").versionRef("ktor")
+            library("ktor-serialization-kotlinx-json", "io.ktor", "ktor-serialization-kotlinx-json").versionRef("ktor")
             library("amule-ec", "com.iukonline.amule", "javaamuleec").version("0.5.1-SNAPSHOT")
+            library("bt-bencoding", "com.github.atomashpolskiy", "bt-bencoding").version("1.10")
 
             // Plugins
             plugin("kotlin-jvm", "org.jetbrains.kotlin.jvm").versionRef("kotlin")
@@ -33,7 +35,8 @@ dependencyResolutionManagement {
                     "ktor-server-netty",
                     "ktor-server-content-negotiation",
                     "ktor-serialization-kotlinx-xml",
-                    "ktor-server-call-logging"
+                    "ktor-server-call-logging",
+                    "ktor-serialization-kotlinx-json"
                 )
             )
         }
