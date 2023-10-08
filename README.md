@@ -65,3 +65,12 @@ Name: Any name you want
 Host: amarr # The host where amarr is running, for docker containers it's usually the name of the container
 Port: 8080 # The port where amarr is listening
 ```
+
+## TODO
+
+- [ ] Publish EC library to maven
+- [ ] Implement generation of torrent files
+- [ ] Dockerize and publish to docker hub
+- [ ] Add support for multiple categories by a local database
+- [ ] Add support for percentage of completion of search
+- [ ] Document the versions of aMule that are supported
