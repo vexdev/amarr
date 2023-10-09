@@ -85,6 +85,6 @@ Download Client: The name you gave to amarr in the previous step
 - [X] ~~Implement generation of torrent files~~
 - [ ] Add support for multiple categories by a local database (Or by amule client?)
 - [ ] Publish EC library to maven
-- [ ] Dockerize and publish to docker hub
+- [X] Dockerize and publish to docker hub
 - [ ] Add support for percentage of completion of search
 - [ ] Document the versions of aMule that are supported

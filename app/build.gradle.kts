@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.jib)
     application
 }
 
@@ -33,4 +34,14 @@ application {
 
 tasks.named<Test>("test") {
     useJUnitPlatform()
+}
+
+jib {
+    from {
+        image = "openjdk:17-jdk-slim"
+    }
+    to {
+        image = "vexdev/amarr"
+        tags = setOf("0.1.0")
+    }
 }

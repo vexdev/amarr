@@ -27,6 +27,7 @@ dependencyResolutionManagement {
             // Plugins
             plugin("kotlin-jvm", "org.jetbrains.kotlin.jvm").versionRef("kotlin")
             plugin("kotlin-serialization", "org.jetbrains.kotlin.plugin.serialization").versionRef("kotlin")
+            plugin("jib", "com.google.cloud.tools.jib").version("3.4.0")
 
             // Bundles
             bundle(
