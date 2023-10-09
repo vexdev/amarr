@@ -19,7 +19,6 @@ import org.slf4j.event.Level
 lateinit var AMULE_PORT: String
 lateinit var AMULE_HOST: String
 lateinit var AMULE_PASSWORD: String
-lateinit var AMARR_URL: String
 const val FINISHED_FOLDER = "/finished"
 
 fun main() {
@@ -63,9 +62,6 @@ fun loadEnv() {
     }
     AMULE_PASSWORD = System.getenv("AMULE_PASSWORD").apply {
         if (this == null) throw Exception("AMULE_PASSWORD is not set")
-    }
-    AMARR_URL = System.getenv("AMARR_URL").apply {
-        if (this == null) throw Exception("AMARR_URL is not set")
     }
 }
 

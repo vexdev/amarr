@@ -38,7 +38,6 @@ amarr:
     - AMULE_HOST=amule
     - AMULE_PORT=4712
     - AMULE_PASSWORD=secret
-    - AMARR_URL=http://amarr:8080
   volumes:
     - /path/to/finished:/finished
   ports:
