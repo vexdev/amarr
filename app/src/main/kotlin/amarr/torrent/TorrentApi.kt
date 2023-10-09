@@ -29,7 +29,7 @@ fun Application.torrentApi(amuleClient: AmuleClient) {
         }
         post("/api/v2/torrents/add") {
             val params = call.receiveParameters()
-            val urls = params["urls"]!!.split("\n").filterNot { it.isBlank() }
+            val urls = params["urls"]?.split("\n")?.filterNot { it.isBlank() }
             val category = params["category"]
             val paused = params["paused"]
             call.application.log.debug(

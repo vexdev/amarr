@@ -47,6 +47,7 @@ amarr:
 
 ## Radarr/Sonarr configuration
 
+### Configure amarr as a torrent indexer
 You need to configure Sonarr/Radarr to use amarr as a torrent indexer. You can do that by adding a new Torznab indexer
 with the following settings:
 
@@ -55,21 +56,34 @@ Name: Any name you want
 Url: http://amarr:8080
 ```
 
-You can leave the rest of the settings as default.
+You can leave the rest of the settings as default for now, we will come back to them later.
 
+### Configure amarr as a download client
 You will need then to add the download client. You can do that by adding a new download client of type qBittorrent with
 the following settings:
 
 ```
+! Ensure you pressed the "Show advanced settings" button
 Name: Any name you want
 Host: amarr # The host where amarr is running, for docker containers it's usually the name of the container
 Port: 8080 # The port where amarr is listening
+Priority: 50 # This is the lowest possible priority, so Sonarr/Radarr will prefer other download clients
+```
+
+### Configure amarr as a preferred download client for its indexer
+
+You need to configure Sonarr/Radarr to prefer amarr as a download client for the indexer we created before.
+You can do that by going to the **indexer settings** and setting the following values for Amarr:
+
+```
+! Ensure you pressed the "Show advanced settings" button
+Download Client: The name you gave to amarr in the previous step
 ```
 
 ## TODO
 
 - [X] ~~Implement generation of torrent files~~
-- [ ] Add support for multiple categories by a local database
+- [ ] Add support for multiple categories by a local database (Or by amule client?)
 - [ ] Publish EC library to maven
 - [ ] Dockerize and publish to docker hub
 - [ ] Add support for percentage of completion of search

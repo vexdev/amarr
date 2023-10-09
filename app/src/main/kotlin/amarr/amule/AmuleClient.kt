@@ -60,16 +60,10 @@ class AmuleClient(
         }
     }
 
-    fun download(magnet: String) {
+    fun download(magnet: MagnetLink) {
         synchronized(this) {
             log.debug("Downloading magnet link: {}", magnet)
-            val magnetLink = try {
-                parseMagnetLink(magnet)
-            } catch (e: Exception) {
-                log.info("Invalid magnet link for Amarr: {}", magnet, e)
-                return
-            }
-            client.addED2KLink(magnetLink.toEd2kLink())
+            client.addED2KLink(magnet.toEd2kLink())
         }
     }
 
@@ -149,21 +143,6 @@ class AmuleClient(
         log.debug("Found cached search result")
         return searchResult.files
     }
-
-    private fun parseMagnetLink(magnet: String): MagnetLink = magnet
-        .substringAfter("magnet:?")
-        .split("&")
-        .filter { it.matches(Regex(".+=.+")) }
-        .map { val els = it.split("="); els[0] to els[1] }
-        .let { params ->
-            val hash = base32().decode(params.first { it.first == "xt" }.second.substringAfter("urn:btih:"))
-            MagnetLink(
-                hash = hash,
-                name = params.first { it.first == "dn" }.second.decodeURLPart(),
-                size = params.first { it.first == "xl" }.second.toLong(),
-                trackers = params.filter { it.first == "tr" }.map { it.second.decodeURLPart() }
-            )
-        }
 
     class SearchResult(
         val files: List<SearchFile>,

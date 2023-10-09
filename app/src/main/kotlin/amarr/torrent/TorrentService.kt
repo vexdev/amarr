@@ -2,11 +2,13 @@ package amarr.torrent
 
 import amarr.FINISHED_FOLDER
 import amarr.amule.AmuleClient
+import amarr.amule.MagnetLink
 import amarr.amule.model.DownloadPriority
 import amarr.amule.model.DownloadStatus
 import amarr.torrent.model.Category
 import amarr.torrent.model.TorrentInfo
 import amarr.torrent.model.TorrentState
+import io.ktor.server.plugins.*
 import io.ktor.util.logging.*
 
 class TorrentService(private val amuleClient: AmuleClient, private val log: Logger) {
@@ -60,8 +62,20 @@ class TorrentService(private val amuleClient: AmuleClient, private val log: Logg
         categoryList.add(Category(category, ""))
     }
 
-    fun addTorrent(urls: List<String>, category: String?, paused: String?) {
-        urls.forEach { magnetLink ->
+    fun addTorrent(urls: List<String>?, category: String?, paused: String?) {
+        if (urls == null) {
+            log.error("No urls provided")
+            throw nonAmarrLink("No urls provided")
+        }
+        urls.forEach { url ->
+            val magnetLink = try {
+                MagnetLink.fromString(url)
+            } catch (e: Exception) {
+                throw nonAmarrLink(url)
+            }
+            if (!magnetLink.isAmarr()) {
+                throw nonAmarrLink(url)
+            }
             amuleClient.download(magnetLink)
         }
     }
@@ -72,6 +86,14 @@ class TorrentService(private val amuleClient: AmuleClient, private val log: Logg
 
     fun deleteAllTorrents(deleteFiles: String?) {
         TODO("Not yet implemented")
+    }
+
+    private fun nonAmarrLink(url: String): Exception {
+        log.error(
+            "The provided link does not appear to be an Amarr link: {}. " +
+                    "Have you configured Radarr/Sonarr's download client priority correctly? See README.md", url
+        )
+        return NotFoundException("The provided link does not appear to be an Amarr link: $url")
     }
 
 }
