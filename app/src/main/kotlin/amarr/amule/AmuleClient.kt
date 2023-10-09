@@ -4,9 +4,11 @@ import amarr.amule.model.Download
 import amarr.amule.model.DownloadPriority
 import amarr.amule.model.DownloadStatus
 import amarr.amule.model.SearchFile
+import com.google.common.io.BaseEncoding.base32
 import com.iukonline.amule.ec.v204.ECClientV204
 import com.iukonline.amule.ec.v204.ECCodesV204
 import io.ktor.http.*
+import io.ktor.util.*
 import org.slf4j.Logger
 import java.net.Socket
 
@@ -100,6 +102,15 @@ class AmuleClient(
             }
     }
 
+    fun delete(hashes: List<String>) {
+        synchronized(this) {
+            hashes.forEach { hash ->
+                log.debug("Deleting torrent with hash: {}", hash)
+                client.changeDownloadStatus(hex(hash), ECCodesV204.EC_OP_PARTFILE_DELETE)
+            }
+        }
+    }
+
     private fun performSearch(query: String): List<SearchFile> {
         val searchResponse = client.searchStart(query, null, null, -1, -1, 0, ECCodesV204.EC_SEARCH_GLOBAL)
         log.debug("Search response: {}", searchResponse)
@@ -114,7 +125,7 @@ class AmuleClient(
                 SearchFile(
                     query = query,
                     fileName = result.fileName,
-                    hash = result.hash.toHexString(),
+                    hash = result.hash,
                     sizeFull = result.sizeFull,
                     sourceCount = result.sourceCount,
                     sourceXfer = result.sourceXfer,
@@ -145,8 +156,9 @@ class AmuleClient(
         .filter { it.matches(Regex(".+=.+")) }
         .map { val els = it.split("="); els[0] to els[1] }
         .let { params ->
+            val hash = base32().decode(params.first { it.first == "xt" }.second.substringAfter("urn:btih:"))
             MagnetLink(
-                hash = params.first { it.first == "xt" }.second.substringAfter("urn:ed2k:"),
+                hash = hash,
                 name = params.first { it.first == "dn" }.second.decodeURLPart(),
                 size = params.first { it.first == "xl" }.second.toLong(),
                 trackers = params.filter { it.first == "tr" }.map { it.second.decodeURLPart() }
@@ -158,12 +170,4 @@ class AmuleClient(
         val ttl: Long,
     )
 
-    class MagnetLink(
-        val hash: String,
-        val name: String,
-        val size: Long,
-        val trackers: List<String>,
-    ) {
-        fun toEd2kLink() = "ed2k://|file|${name.encodeURLParameter()}|$size|$hash|/"
-    }
 }

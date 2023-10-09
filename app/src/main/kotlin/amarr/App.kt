@@ -4,7 +4,6 @@ import amarr.amule.AmuleClient
 import amarr.amule.debugApi
 import amarr.torrent.torrentApi
 import amarr.torznab.torznabApi
-import amarr.tracker.trackerApi
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.serialization.kotlinx.xml.*
 import io.ktor.server.application.*
@@ -52,7 +51,6 @@ private fun Application.app(amuleClient: AmuleClient) {
     }
     debugApi(amuleClient)
     torznabApi(amuleClient)
-    trackerApi(amuleClient)
     torrentApi(amuleClient)
 }
 

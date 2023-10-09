@@ -68,9 +68,9 @@ Port: 8080 # The port where amarr is listening
 
 ## TODO
 
-- [ ] Publish EC library to maven
-- [ ] Implement generation of torrent files
-- [ ] Dockerize and publish to docker hub
+- [X] ~~Implement generation of torrent files~~
 - [ ] Add support for multiple categories by a local database
+- [ ] Publish EC library to maven
+- [ ] Dockerize and publish to docker hub
 - [ ] Add support for percentage of completion of search
 - [ ] Document the versions of aMule that are supported

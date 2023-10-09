@@ -67,7 +67,7 @@ class TorrentService(private val amuleClient: AmuleClient, private val log: Logg
     }
 
     fun deleteTorrent(hashes: List<String>, deleteFiles: String?) {
-        TODO("Not yet implemented")
+        amuleClient.delete(hashes)
     }
 
     fun deleteAllTorrents(deleteFiles: String?) {

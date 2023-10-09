@@ -12,7 +12,7 @@ repositories {
 dependencies {
     implementation(libs.bundles.ktor.server)
     implementation(libs.amule.ec)
-    implementation(libs.bt.bencoding)
+    implementation(libs.guava)
     implementation("ch.qos.logback:logback-classic:1.4.11")
     implementation("io.ktor:ktor-server-call-logging-jvm:2.3.4")
     implementation("io.ktor:ktor-server-default-headers-jvm:2.3.4")

@@ -1,11 +1,10 @@
 package amarr.torznab
 
-import amarr.AMARR_URL
 import amarr.amule.AmuleClient
+import amarr.amule.MagnetLink
 import amarr.amule.model.SearchFile
 import amarr.torznab.model.Feed
 import amarr.torznab.model.Feed.Channel.Item
-import io.ktor.http.*
 import io.ktor.util.logging.*
 
 class FeedBuilder(private val amuleClient: AmuleClient, private val log: Logger) {
@@ -28,11 +27,7 @@ class FeedBuilder(private val amuleClient: AmuleClient, private val log: Logger)
                     Item(
                         title = result.fileName,
                         enclosure = Item.Enclosure(
-                            url = AMARR_URL +
-                                    "/download" +
-                                    "?query=${result.query.encodeURLParameter()}" +
-                                    "&hash=${result.hash.encodeURLParameter()}" +
-                                    "&size=${result.sizeFull}",
+                            url = MagnetLink.forAmarr(result.hash, result.fileName, result.sizeFull).toString(),
                             length = result.sizeFull
                         ),
                         attributes = listOf(

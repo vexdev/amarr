@@ -12,6 +12,7 @@ dependencyResolutionManagement {
             // Versions
             version("ktor", "2.3.4")
             version("kotlin", "1.9.10")
+            version("bt", "1.10")
 
             // Libraries
             library("ktor-server-core", "io.ktor", "ktor-server-core").versionRef("ktor")
@@ -21,7 +22,7 @@ dependencyResolutionManagement {
             library("ktor-server-call-logging", "io.ktor", "ktor-server-call-logging").versionRef("ktor")
             library("ktor-serialization-kotlinx-json", "io.ktor", "ktor-serialization-kotlinx-json").versionRef("ktor")
             library("amule-ec", "com.iukonline.amule", "javaamuleec").version("0.5.1-SNAPSHOT")
-            library("bt-bencoding", "com.github.atomashpolskiy", "bt-bencoding").version("1.10")
+            library("guava", "com.google.guava", "guava").version("32.1.2-jre")
 
             // Plugins
             plugin("kotlin-jvm", "org.jetbrains.kotlin.jvm").versionRef("kotlin")
