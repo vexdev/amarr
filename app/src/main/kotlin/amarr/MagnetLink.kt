@@ -1,4 +1,4 @@
-package amarr.amule
+package amarr
 
 import com.google.common.io.BaseEncoding.base32
 import io.ktor.http.*

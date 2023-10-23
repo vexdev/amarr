@@ -12,7 +12,7 @@ repositories {
 
 dependencies {
     implementation(libs.bundles.ktor.server)
-    implementation(libs.amule.ec)
+    implementation(libs.jamule)
     implementation(libs.guava)
     implementation("ch.qos.logback:logback-classic:1.4.11")
     implementation("io.ktor:ktor-server-call-logging-jvm:2.3.4")
@@ -42,6 +42,6 @@ jib {
     }
     to {
         image = "vexdev/amarr"
-        tags = setOf("0.1.0")
+        tags = setOf("0.2.0")
     }
 }

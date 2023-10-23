@@ -1,6 +1,5 @@
 package amarr
 
-import amarr.amule.AmuleClient
 import amarr.amule.debugApi
 import amarr.torrent.torrentApi
 import amarr.torznab.torznabApi
@@ -12,6 +11,7 @@ import io.ktor.server.netty.*
 import io.ktor.server.plugins.callloging.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.util.logging.*
+import jamule.AmuleClient
 import kotlinx.serialization.json.Json
 import org.slf4j.LoggerFactory
 import org.slf4j.event.Level
@@ -26,7 +26,7 @@ fun main() {
     buildClient(
         LoggerFactory.getLogger("AmuleClient")
     ).use { amuleClient ->
-        amuleClient.connect()
+        amuleClient.authenticate(AMULE_PASSWORD)
         embeddedServer(
             Netty, port = 8080
         ) {
@@ -65,5 +65,5 @@ fun loadEnv() {
     }
 }
 
-fun buildClient(logger: Logger): AmuleClient = AmuleClient(AMULE_HOST, AMULE_PORT.toInt(), AMULE_PASSWORD, logger)
+fun buildClient(logger: Logger): AmuleClient = AmuleClient(AMULE_HOST, AMULE_PORT.toInt(), logger = logger)
 

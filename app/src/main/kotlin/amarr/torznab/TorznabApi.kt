@@ -1,18 +1,16 @@
 package amarr.torznab
 
-import amarr.amule.AmuleClient
 import amarr.torznab.model.Caps
 import amarr.torznab.model.Feed
 import amarr.torznab.model.Feed.Channel.Item
 import amarr.torznab.model.Feed.Channel.Item.Enclosure
 import amarr.torznab.model.Feed.Channel.Item.TorznabAttribute
 import amarr.torznab.model.Feed.Channel.Response
-import io.ktor.http.*
-import io.ktor.http.HttpStatusCode.Companion.OK
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.util.logging.*
+import jamule.AmuleClient
 
 
 fun Application.torznabApi(client: AmuleClient) {

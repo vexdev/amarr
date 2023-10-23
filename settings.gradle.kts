@@ -21,7 +21,7 @@ dependencyResolutionManagement {
             library("ktor-serialization-kotlinx-xml", "io.ktor", "ktor-serialization-kotlinx-xml").versionRef("ktor")
             library("ktor-server-call-logging", "io.ktor", "ktor-server-call-logging").versionRef("ktor")
             library("ktor-serialization-kotlinx-json", "io.ktor", "ktor-serialization-kotlinx-json").versionRef("ktor")
-            library("amule-ec", "com.iukonline.amule", "javaamuleec").version("0.5.1-SNAPSHOT")
+            library("jamule", "com.vexdev", "jamule").version("0.4.0")
             library("guava", "com.google.guava", "guava").version("32.1.2-jre")
 
             // Plugins

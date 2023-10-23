@@ -1,53 +1,50 @@
 package amarr.torrent
 
 import amarr.FINISHED_FOLDER
-import amarr.amule.AmuleClient
-import amarr.amule.MagnetLink
-import amarr.amule.model.DownloadPriority
-import amarr.amule.model.DownloadStatus
+import amarr.MagnetLink
 import amarr.torrent.model.Category
 import amarr.torrent.model.TorrentInfo
 import amarr.torrent.model.TorrentState
 import io.ktor.server.plugins.*
 import io.ktor.util.logging.*
+import jamule.AmuleClient
+import jamule.model.AmuleCategory
+import jamule.model.DownloadCommand
+import jamule.model.FileStatus
+import kotlin.random.Random
 
 class TorrentService(private val amuleClient: AmuleClient, private val log: Logger) {
-    private val categoryList = mutableListOf<Category>()
 
     fun getTorrentInfo(category: String?) = amuleClient
-        .listDownloads()
+        .getDownloadQueue()
+        .getOrThrow()
         .map { dl ->
             TorrentInfo(
-                hash = dl.hash,
-                name = dl.fileName,
-                size = dl.sizeFull,
-                total_size = dl.sizeFull,
-                downloaded = dl.sizeDone,
-                progress = dl.sizeDone.toDouble() / dl.sizeFull.toDouble(),
-                priority = when (dl.prio) {
-                    DownloadPriority.PR_LOW -> 1
-                    DownloadPriority.PR_NORMAL -> 2
-                    DownloadPriority.PR_HIGH -> 3
-                    else -> -1
-                },
-                state = if (dl.sourceXfer > 0) TorrentState.downloading
-                else when (dl.status) {
-                    DownloadStatus.PS_READY -> TorrentState.metaDL
-                    DownloadStatus.PS_ERROR -> TorrentState.error
-                    DownloadStatus.PS_COMPLETING -> TorrentState.checkingDL
-                    DownloadStatus.PS_COMPLETE -> TorrentState.uploading
-                    DownloadStatus.PS_PAUSED -> TorrentState.pausedDL
-                    DownloadStatus.PS_ALLOCATING -> TorrentState.allocating
-                    DownloadStatus.PS_INSUFFICIENT -> TorrentState.error
+                hash = dl.fileHashHexString!!,
+                name = dl.fileName!!,
+                size = dl.sizeFull!!,
+                total_size = dl.sizeFull!!,
+                downloaded = dl.sizeDone!!,
+                progress = dl.sizeDone!!.toDouble() / dl.sizeFull!!.toDouble(),
+                priority = dl.downPrio.toInt(),
+                state = if (dl.sourceXferCount > 0) TorrentState.downloading
+                else when (dl.fileStatus) {
+                    FileStatus.READY -> TorrentState.metaDL
+                    FileStatus.ERROR -> TorrentState.error
+                    FileStatus.COMPLETING -> TorrentState.checkingDL
+                    FileStatus.COMPLETE -> TorrentState.uploading
+                    FileStatus.PAUSED -> TorrentState.pausedDL
+                    FileStatus.ALLOCATING -> TorrentState.allocating
+                    FileStatus.INSUFFICIENT -> TorrentState.error
                         .also { log.error("Insufficient disk space") }
 
                     else -> TorrentState.unknown
                 },
-                category = category ?: categoryList.firstOrNull()?.name,
+                category = category ?: categoryById(dl.fileCat)?.name ?: "",
                 save_path = FINISHED_FOLDER,
-                dlspeed = dl.speed,
-                num_seeds = dl.sourceCount,
-                eta = computeEta(dl.speed, dl.sizeFull, dl.sizeDone),
+                dlspeed = dl.speed!!,
+                num_seeds = dl.sourceXferCount.toInt(),
+                eta = computeEta(dl.speed!!, dl.sizeFull!!, dl.sizeDone!!),
             )
         }
 
@@ -56,11 +53,20 @@ class TorrentService(private val amuleClient: AmuleClient, private val log: Logg
         return if (speed == 0L) 8640000 else Math.min((remainingBytes / speed).toInt(), 8640000)
     }
 
-    fun getCategories(): Map<String, Category> = categoryList.associateBy { it.name }
-
-    fun addCategory(category: String) {
-        categoryList.add(Category(category, ""))
+    private fun categoryById(category: Long): Category? {
+        return amuleClient.getCategories().getOrThrow().firstOrNull { it.id == category }
+            ?.let { Category(it.name, it.path) }
     }
+
+    fun getCategories(): Map<String, Category> = amuleClient
+        .getCategories()
+        .getOrThrow()
+        .map { Category(it.name, it.path) }
+        .associateBy { it.name }
+
+    fun addCategory(category: String) = amuleClient.createCategory(
+        AmuleCategory(Random.nextInt(1, Int.MAX_VALUE).toLong(), category, "")
+    )
 
     fun addTorrent(urls: List<String>?, category: String?, paused: String?) {
         if (urls == null) {
@@ -76,17 +82,23 @@ class TorrentService(private val amuleClient: AmuleClient, private val log: Logg
             if (!magnetLink.isAmarr()) {
                 throw nonAmarrLink(url)
             }
-            amuleClient.download(magnetLink)
+            amuleClient.downloadEd2kLink(magnetLink.toEd2kLink())
+            amuleClient.getCategories().getOrThrow().first { it.name == category }.let { cat ->
+                amuleClient.setFileCategory(magnetLink.hash, cat.id)
+            }
         }
     }
 
-    fun deleteTorrent(hashes: List<String>, deleteFiles: String?) {
-        amuleClient.delete(hashes)
+    @OptIn(ExperimentalStdlibApi::class)
+    fun deleteTorrent(hashes: List<String>, deleteFiles: String?) = hashes.forEach { hash ->
+        amuleClient.sendDownloadCommand(hash.hexToByteArray(), DownloadCommand.DELETE)
     }
 
-    fun deleteAllTorrents(deleteFiles: String?) {
-        TODO("Not yet implemented")
+    @OptIn(ExperimentalStdlibApi::class)
+    fun deleteAllTorrents(deleteFiles: String?) = amuleClient.getSharedFiles().getOrThrow().forEach { file ->
+        amuleClient.sendDownloadCommand(file.fileHashHexString!!.hexToByteArray(), DownloadCommand.DELETE)
     }
+
 
     private fun nonAmarrLink(url: String): Exception {
         log.error(
