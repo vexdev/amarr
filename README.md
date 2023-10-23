@@ -30,7 +30,6 @@ The container exposes the port 8080, which is the port where amarr will expose t
 ### Example docker-compose.yml
 
 ```yaml
-version: '3.9'
 amarr:
   image: vexdev/amarr:latest
   container_name: amarr
