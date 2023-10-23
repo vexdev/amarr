@@ -47,6 +47,7 @@ amarr:
 ## Radarr/Sonarr configuration
 
 ### Configure amarr as a torrent indexer
+
 You need to configure Sonarr/Radarr to use amarr as a torrent indexer. You can do that by adding a new Torznab indexer
 with the following settings:
 
@@ -58,6 +59,7 @@ Url: http://amarr:8080
 You can leave the rest of the settings as default for now, we will come back to them later.
 
 ### Configure amarr as a download client
+
 You will need then to add the download client. You can do that by adding a new download client of type qBittorrent with
 the following settings:
 
@@ -79,11 +81,16 @@ You can do that by going to the **indexer settings** and setting the following v
 Download Client: The name you gave to amarr in the previous step
 ```
 
+### Supported amule versions
+
+Amarr is currently using jAmule to connect to amule, which only supports amule versions 2.3.1 to 2.3.3.
+Amarr has been especially tested with the latest released version of Adunanza.
+
 ## TODO
 
 - [X] ~~Implement generation of torrent files~~
-- [ ] Add support for multiple categories by a local database (Or by amule client?)
-- [ ] Publish EC library to maven
+- [X] Add support for multiple categories by a local database (Or by amule client?)
+- [X] Publish EC library to maven
 - [X] Dockerize and publish to docker hub
-- [ ] Add support for percentage of completion of search
-- [ ] Document the versions of aMule that are supported
+- [X] Add support for percentage of completion of search
+- [X] Document the versions of aMule that are supported

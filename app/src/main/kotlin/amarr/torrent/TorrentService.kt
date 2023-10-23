@@ -9,6 +9,7 @@ import io.ktor.server.plugins.*
 import io.ktor.util.logging.*
 import jamule.AmuleClient
 import jamule.model.AmuleCategory
+import jamule.model.AmuleTransferringFile
 import jamule.model.DownloadCommand
 import jamule.model.FileStatus
 import kotlin.random.Random
@@ -18,34 +19,53 @@ class TorrentService(private val amuleClient: AmuleClient, private val log: Logg
     fun getTorrentInfo(category: String?) = amuleClient
         .getDownloadQueue()
         .getOrThrow()
+        .plus(amuleClient.getSharedFiles().getOrThrow())
         .map { dl ->
-            TorrentInfo(
-                hash = dl.fileHashHexString!!,
-                name = dl.fileName!!,
-                size = dl.sizeFull!!,
-                total_size = dl.sizeFull!!,
-                downloaded = dl.sizeDone!!,
-                progress = dl.sizeDone!!.toDouble() / dl.sizeFull!!.toDouble(),
-                priority = dl.downPrio.toInt(),
-                state = if (dl.sourceXferCount > 0) TorrentState.downloading
-                else when (dl.fileStatus) {
-                    FileStatus.READY -> TorrentState.metaDL
-                    FileStatus.ERROR -> TorrentState.error
-                    FileStatus.COMPLETING -> TorrentState.checkingDL
-                    FileStatus.COMPLETE -> TorrentState.uploading
-                    FileStatus.PAUSED -> TorrentState.pausedDL
-                    FileStatus.ALLOCATING -> TorrentState.allocating
-                    FileStatus.INSUFFICIENT -> TorrentState.error
-                        .also { log.error("Insufficient disk space") }
+            if (dl is AmuleTransferringFile)
+                TorrentInfo(
+                    hash = dl.fileHashHexString!!,
+                    name = dl.fileName!!,
+                    size = dl.sizeFull!!,
+                    total_size = dl.sizeFull!!,
+                    save_path = FINISHED_FOLDER,
+                    downloaded = dl.sizeDone!!,
+                    progress = dl.sizeDone!!.toDouble() / dl.sizeFull!!.toDouble(),
+                    priority = dl.downPrio.toInt(),
+                    state = if (dl.sourceXferCount > 0) TorrentState.downloading
+                    else when (dl.fileStatus) {
+                        FileStatus.READY -> TorrentState.metaDL
+                        FileStatus.ERROR -> TorrentState.error
+                        FileStatus.COMPLETING -> TorrentState.checkingDL
+                        FileStatus.COMPLETE -> TorrentState.uploading
+                        FileStatus.PAUSED -> TorrentState.pausedDL
+                        FileStatus.ALLOCATING -> TorrentState.allocating
+                        FileStatus.INSUFFICIENT -> TorrentState.error
+                            .also { log.error("Insufficient disk space") }
 
-                    else -> TorrentState.unknown
-                },
-                category = category ?: categoryById(dl.fileCat)?.name ?: "",
-                save_path = FINISHED_FOLDER,
-                dlspeed = dl.speed!!,
-                num_seeds = dl.sourceXferCount.toInt(),
-                eta = computeEta(dl.speed!!, dl.sizeFull!!, dl.sizeDone!!),
-            )
+                        else -> TorrentState.unknown
+                    },
+                    category = category ?: categoryById(dl.fileCat)?.name ?: "",
+                    dlspeed = dl.speed!!,
+                    num_seeds = dl.sourceXferCount.toInt(),
+                    eta = computeEta(dl.speed!!, dl.sizeFull!!, dl.sizeDone!!),
+                )
+            else
+            // File is already fully downloaded
+                TorrentInfo(
+                    hash = dl.fileHashHexString!!,
+                    name = dl.fileName!!,
+                    size = dl.sizeFull!!,
+                    total_size = dl.sizeFull!!,
+                    save_path = FINISHED_FOLDER,
+                    dlspeed = 0,
+                    downloaded = dl.sizeFull!!,
+                    progress = 1.0,
+                    priority = 0,
+                    state = TorrentState.uploading,
+                    category = category,
+                    eta = 0,
+                    num_seeds = 0, // Irrelevant
+                )
         }
 
     private fun computeEta(speed: Long, sizeFull: Long, sizeDone: Long): Int {
