@@ -87,7 +87,7 @@ Amarr has been especially tested with the latest released version of Adunanza.
 
 ## TODO
 
-- [X] ~~Implement generation of torrent files~~
+- [X] ~~Implement generation of torrent files~~ Using magnet links instead
 - [X] Add support for multiple categories by a local database (Or by amule client?)
 - [X] Publish EC library to maven
 - [X] Dockerize and publish to docker hub
