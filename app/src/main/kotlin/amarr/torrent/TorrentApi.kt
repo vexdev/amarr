@@ -69,5 +69,17 @@ fun Application.torrentApi(amuleClient: AmuleClient) {
             else service.deleteTorrent(hashes, deleteFiles)
             call.respondText("Ok.")
         }
+        get("/api/v2/torrents/files") {
+            val hash = call.request.queryParameters["hash"]!!
+            call.application.log.debug("Received get files request with hash: {}", hash)
+            val response = listOf(service.getFile(hash))
+            call.respondText(format.encodeToString(response), ContentType.Application.Json)
+        }
+        get("/api/v2/torrents/properties") {
+            val hash = call.request.queryParameters["hash"]!!
+            call.application.log.debug("Received get properties request with hash: {}", hash)
+            val response = service.getTorrentProperties(hash)
+            call.respondText(format.encodeToString(response), ContentType.Application.Json)
+        }
     }
 }

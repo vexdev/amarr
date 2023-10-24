@@ -2,9 +2,7 @@ package amarr.torrent
 
 import amarr.FINISHED_FOLDER
 import amarr.MagnetLink
-import amarr.torrent.model.Category
-import amarr.torrent.model.TorrentInfo
-import amarr.torrent.model.TorrentState
+import amarr.torrent.model.*
 import io.ktor.server.plugins.*
 import io.ktor.util.logging.*
 import jamule.AmuleClient
@@ -16,57 +14,67 @@ import kotlin.random.Random
 
 class TorrentService(private val amuleClient: AmuleClient, private val log: Logger) {
 
-    fun getTorrentInfo(category: String?) = amuleClient
-        .getDownloadQueue()
-        .getOrThrow()
-        .plus(amuleClient.getSharedFiles().getOrThrow())
-        .map { dl ->
-            if (dl is AmuleTransferringFile)
-                TorrentInfo(
-                    hash = dl.fileHashHexString!!,
-                    name = dl.fileName!!,
-                    size = dl.sizeFull!!,
-                    total_size = dl.sizeFull!!,
-                    save_path = FINISHED_FOLDER,
-                    downloaded = dl.sizeDone!!,
-                    progress = dl.sizeDone!!.toDouble() / dl.sizeFull!!.toDouble(),
-                    priority = dl.downPrio.toInt(),
-                    state = if (dl.sourceXferCount > 0) TorrentState.downloading
-                    else when (dl.fileStatus) {
-                        FileStatus.READY -> TorrentState.metaDL
-                        FileStatus.ERROR -> TorrentState.error
-                        FileStatus.COMPLETING -> TorrentState.checkingDL
-                        FileStatus.COMPLETE -> TorrentState.uploading
-                        FileStatus.PAUSED -> TorrentState.pausedDL
-                        FileStatus.ALLOCATING -> TorrentState.allocating
-                        FileStatus.INSUFFICIENT -> TorrentState.error
-                            .also { log.error("Insufficient disk space") }
+    fun getTorrentInfo(category: String?): List<TorrentInfo> {
+        val categoryId = amuleClient.getCategories().getOrThrow().firstOrNull { it.name == category }?.id
+        val downloadingFiles = amuleClient
+            .getDownloadQueue()
+            .getOrThrow()
+            .filter { it.fileCat == categoryId || categoryId == null }
+        val sharedFiles = amuleClient.getSharedFiles().getOrThrow()
+        val downloadingFilesHashSet = downloadingFiles.map { it.fileHashHexString }.toHashSet()
 
-                        else -> TorrentState.unknown
-                    },
-                    category = category ?: categoryById(dl.fileCat)?.name ?: "",
-                    dlspeed = dl.speed!!,
-                    num_seeds = dl.sourceXferCount.toInt(),
-                    eta = computeEta(dl.speed!!, dl.sizeFull!!, dl.sizeDone!!),
-                )
-            else
-            // File is already fully downloaded
-                TorrentInfo(
-                    hash = dl.fileHashHexString!!,
-                    name = dl.fileName!!,
-                    size = dl.sizeFull!!,
-                    total_size = dl.sizeFull!!,
-                    save_path = FINISHED_FOLDER,
-                    dlspeed = 0,
-                    downloaded = dl.sizeFull!!,
-                    progress = 1.0,
-                    priority = 0,
-                    state = TorrentState.uploading,
-                    category = category,
-                    eta = 0,
-                    num_seeds = 0, // Irrelevant
-                )
-        }
+        val allFiles = sharedFiles
+            .filterNot { downloadingFilesHashSet.contains(it.fileHashHexString) } + downloadingFiles
+
+        return allFiles
+            .map { dl ->
+                if (dl is AmuleTransferringFile)
+                    TorrentInfo(
+                        hash = dl.fileHashHexString!!,
+                        name = dl.fileName!!,
+                        size = dl.sizeFull!!,
+                        total_size = dl.sizeFull!!,
+                        save_path = FINISHED_FOLDER,
+                        downloaded = dl.sizeDone!!,
+                        progress = dl.sizeDone!!.toDouble() / dl.sizeFull!!.toDouble(),
+                        priority = dl.downPrio.toInt(),
+                        state = if (dl.sourceXferCount > 0) TorrentState.downloading
+                        else when (dl.fileStatus) {
+                            FileStatus.READY -> TorrentState.metaDL
+                            FileStatus.ERROR -> TorrentState.error
+                            FileStatus.COMPLETING -> TorrentState.checkingDL
+                            FileStatus.COMPLETE -> TorrentState.uploading
+                            FileStatus.PAUSED -> TorrentState.pausedDL
+                            FileStatus.ALLOCATING -> TorrentState.allocating
+                            FileStatus.INSUFFICIENT -> TorrentState.error
+                                .also { log.error("Insufficient disk space") }
+
+                            else -> TorrentState.unknown
+                        },
+                        category = category ?: categoryById(dl.fileCat)?.name ?: "",
+                        dlspeed = dl.speed!!,
+                        num_seeds = dl.sourceXferCount.toInt(),
+                        eta = computeEta(dl.speed!!, dl.sizeFull!!, dl.sizeDone!!),
+                    )
+                else
+                // File is already fully downloaded
+                    TorrentInfo(
+                        hash = dl.fileHashHexString!!,
+                        name = dl.fileName!!,
+                        size = dl.sizeFull!!,
+                        total_size = dl.sizeFull!!,
+                        save_path = FINISHED_FOLDER,
+                        dlspeed = 0,
+                        downloaded = dl.sizeFull!!,
+                        progress = 1.0,
+                        priority = 0,
+                        state = TorrentState.uploading,
+                        category = category,
+                        eta = 0,
+                        num_seeds = 0, // Irrelevant
+                    )
+            }
+    }
 
     private fun computeEta(speed: Long, sizeFull: Long, sizeDone: Long): Int {
         val remainingBytes = sizeFull - sizeDone
@@ -119,6 +127,23 @@ class TorrentService(private val amuleClient: AmuleClient, private val log: Logg
         amuleClient.sendDownloadCommand(file.fileHashHexString!!.hexToByteArray(), DownloadCommand.DELETE)
     }
 
+    fun getFile(hash: String) = getTorrentInfo(null)
+        .first { it.hash == hash }
+        .let {
+            TorrentFile(
+                name = it.name,
+            )
+        }
+
+    fun getTorrentProperties(hash: String): TorrentProperties = getTorrentInfo(null)
+        .first { it.hash == hash }
+        .let {
+            TorrentProperties(
+                hash = it.hash,
+                save_path = it.save_path,
+                seeding_time = 0,
+            )
+        }
 
     private fun nonAmarrLink(url: String): Exception {
         log.error(

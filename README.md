@@ -93,3 +93,5 @@ Amarr has been especially tested with the latest released version of Adunanza.
 - [X] Dockerize and publish to docker hub
 - [X] Add support for percentage of completion of search
 - [X] Document the versions of aMule that are supported
+- [ ] Add in memory cache for jamule requests
+- [ ] Query the status of amule client and reconnect if necessary
