@@ -21,7 +21,7 @@ lateinit var AMULE_PORT: String
 lateinit var AMULE_HOST: String
 lateinit var AMULE_PASSWORD: String
 lateinit var AMARR_CONFIG_PATH: String
-const val FINISHED_FOLDER = "/finished"
+lateinit var AMULE_FINISHED_PATH: String
 
 fun main() {
     loadEnv()
@@ -66,6 +66,7 @@ fun loadEnv() {
     AMULE_PASSWORD = System.getenv("AMULE_PASSWORD").apply {
         if (this == null) throw Exception("AMULE_PASSWORD is not set")
     }
+    AMULE_FINISHED_PATH = System.getenv("AMULE_FINISHED_PATH").let { it ?: "/finished" }
     AMARR_CONFIG_PATH = System.getenv("AMARR_CONFIG_PATH").let { it ?: "/config" }
 }
 

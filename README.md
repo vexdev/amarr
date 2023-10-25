@@ -15,6 +15,9 @@ AMULE_HOST: amule # The host where amule is running, for docker containers it's 
 AMULE_PORT: 4712 # The port where amule is listening with the EC protocol
 AMULE_PASSWORD: secret # The password to connect to amule
 AMARR_URL: http://amarr:8080 # The url where amarr will be listening, for docker containers it's usually the name of the container
+
+Optional parameters:
+AMULE_FINISHED_PATH: /finished # The directory where amule will download the finished files
 ```
 
 Note: **AMARR_URL** is used to build the url of the torrent files, so it must be accessible from Sonarr/Radarr.
@@ -22,7 +25,6 @@ Note: **AMARR_URL** is used to build the url of the torrent files, so it must be
 It also requires mounting the following volumes:
 
 ```
-/finished # The directory where amule will download the finished files
 /config # The directory where amarr will store its configuration, must be persistent
 ```
 
@@ -39,7 +41,6 @@ amarr:
     - AMULE_PORT=4712
     - AMULE_PASSWORD=secret
   volumes:
-    - /path/to/finished:/finished
     - /path/to/amarr/config:/config
   ports:
     - 8080:8080
