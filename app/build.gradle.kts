@@ -42,6 +42,6 @@ jib {
     }
     to {
         image = "vexdev/amarr"
-        tags = setOf("1.2.0")
+        tags = setOf("1.3.0")
     }
 }

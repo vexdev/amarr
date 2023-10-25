@@ -4,6 +4,8 @@ This connector allows using amule as a download client for [Sonarr](https://sona
 and [Radarr](https://radarr.video/).
 It works by emulating a torrent client, so Sonarr and Radarr will manage your downloads as if they were torrents.
 
+Makes use of [jAmule](https://github.com/vexdev/jamule) to connect to amule.
+
 ## Installation
 
 Amarr runs as a docker container. You can find it in [Docker Hub](https://hub.docker.com/r/vexdev/amarr).
@@ -18,6 +20,7 @@ AMARR_URL: http://amarr:8080 # The url where amarr will be listening, for docker
 
 Optional parameters:
 AMULE_FINISHED_PATH: /finished # The directory where amule will download the finished files
+AMARR_LOG_LEVEL: INFO # The log level of amarr, defaults to INFO
 ```
 
 Note: **AMARR_URL** is used to build the url of the torrent files, so it must be accessible from Sonarr/Radarr.
@@ -97,5 +100,5 @@ Amarr has been especially tested with the latest released version of Adunanza.
 - [X] Add support for percentage of completion of search
 - [X] Document the versions of aMule that are supported
 - [ ] Add in memory cache for jamule requests
-- [ ] Query the status of amule client and reconnect if necessary
+- [X] Query the status of amule client and reconnect if necessary
 - [X] Make categories more resilient, introduce a local database
