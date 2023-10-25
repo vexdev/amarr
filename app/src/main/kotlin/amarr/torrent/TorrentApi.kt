@@ -1,5 +1,7 @@
 package amarr.torrent
 
+import amarr.category.CategoryStore
+import amarr.torrent.model.Category
 import amarr.torrent.model.Preferences
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -10,8 +12,8 @@ import jamule.AmuleClient
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
-fun Application.torrentApi(amuleClient: AmuleClient) {
-    val service = TorrentService(amuleClient, log)
+fun Application.torrentApi(amuleClient: AmuleClient, categoryStore: CategoryStore) {
+    val service = TorrentService(amuleClient, categoryStore, log)
     val format = Json { encodeDefaults = true }
     routing {
         get("/api/v2/app/webapiVersion") {
@@ -43,7 +45,7 @@ fun Application.torrentApi(amuleClient: AmuleClient) {
         }
         post("/api/v2/torrents/createCategory") {
             val params = call.receiveParameters()
-            val category = params["category"]!!
+            val category = Category(params["category"]!!, params["savePath"] ?: "")
             call.application.log.debug("Received create category request with category: {}", category)
             service.addCategory(category)
             call.respondText("Ok.")

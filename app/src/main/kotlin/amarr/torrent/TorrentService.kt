@@ -2,29 +2,31 @@ package amarr.torrent
 
 import amarr.FINISHED_FOLDER
 import amarr.MagnetLink
+import amarr.category.CategoryStore
 import amarr.torrent.model.*
 import io.ktor.server.plugins.*
 import io.ktor.util.logging.*
 import jamule.AmuleClient
-import jamule.model.AmuleCategory
 import jamule.model.AmuleTransferringFile
 import jamule.model.DownloadCommand
 import jamule.model.FileStatus
-import kotlin.random.Random
 
-class TorrentService(private val amuleClient: AmuleClient, private val log: Logger) {
+class TorrentService(
+    private val amuleClient: AmuleClient,
+    private val categoryStore: CategoryStore,
+    private val log: Logger
+) {
 
     fun getTorrentInfo(category: String?): List<TorrentInfo> {
-        val categoryId = amuleClient.getCategories().getOrThrow().firstOrNull { it.name == category }?.id
         val downloadingFiles = amuleClient
             .getDownloadQueue()
             .getOrThrow()
-            .filter { it.fileCat == categoryId || categoryId == null }
         val sharedFiles = amuleClient.getSharedFiles().getOrThrow()
         val downloadingFilesHashSet = downloadingFiles.map { it.fileHashHexString }.toHashSet()
 
-        val allFiles = sharedFiles
-            .filterNot { downloadingFilesHashSet.contains(it.fileHashHexString) } + downloadingFiles
+        val allFiles = (sharedFiles // Downloading files also appear in shared files
+            .filterNot { downloadingFilesHashSet.contains(it.fileHashHexString) } + downloadingFiles)
+            .filter { category == null || categoryStore.getCategory(it.fileHashHexString!!) == category }
 
         return allFiles
             .map { dl ->
@@ -51,7 +53,7 @@ class TorrentService(private val amuleClient: AmuleClient, private val log: Logg
 
                             else -> TorrentState.unknown
                         },
-                        category = category ?: categoryById(dl.fileCat)?.name ?: "",
+                        category = category,
                         dlspeed = dl.speed!!,
                         num_seeds = dl.sourceXferCount.toInt(),
                         eta = computeEta(dl.speed!!, dl.sizeFull!!, dl.sizeDone!!),
@@ -81,21 +83,13 @@ class TorrentService(private val amuleClient: AmuleClient, private val log: Logg
         return if (speed == 0L) 8640000 else Math.min((remainingBytes / speed).toInt(), 8640000)
     }
 
-    private fun categoryById(category: Long): Category? {
-        return amuleClient.getCategories().getOrThrow().firstOrNull { it.id == category }
-            ?.let { Category(it.name, it.path) }
-    }
-
-    fun getCategories(): Map<String, Category> = amuleClient
+    fun getCategories(): Map<String, Category> = categoryStore
         .getCategories()
-        .getOrThrow()
-        .map { Category(it.name, it.path) }
         .associateBy { it.name }
 
-    fun addCategory(category: String) = amuleClient.createCategory(
-        AmuleCategory(Random.nextInt(1, Int.MAX_VALUE).toLong(), category, "")
-    )
+    fun addCategory(category: Category) = categoryStore.addCategory(category)
 
+    @OptIn(ExperimentalStdlibApi::class)
     fun addTorrent(urls: List<String>?, category: String?, paused: String?) {
         if (urls == null) {
             log.error("No urls provided")
@@ -111,8 +105,8 @@ class TorrentService(private val amuleClient: AmuleClient, private val log: Logg
                 throw nonAmarrLink(url)
             }
             amuleClient.downloadEd2kLink(magnetLink.toEd2kLink())
-            amuleClient.getCategories().getOrThrow().first { it.name == category }.let { cat ->
-                amuleClient.setFileCategory(magnetLink.hash, cat.id)
+            if (category != null) {
+                categoryStore.store(category, magnetLink.amuleHexHash())
             }
         }
     }
@@ -120,11 +114,13 @@ class TorrentService(private val amuleClient: AmuleClient, private val log: Logg
     @OptIn(ExperimentalStdlibApi::class)
     fun deleteTorrent(hashes: List<String>, deleteFiles: String?) = hashes.forEach { hash ->
         amuleClient.sendDownloadCommand(hash.hexToByteArray(), DownloadCommand.DELETE)
+        categoryStore.delete(hash)
     }
 
     @OptIn(ExperimentalStdlibApi::class)
     fun deleteAllTorrents(deleteFiles: String?) = amuleClient.getSharedFiles().getOrThrow().forEach { file ->
         amuleClient.sendDownloadCommand(file.fileHashHexString!!.hexToByteArray(), DownloadCommand.DELETE)
+        categoryStore.delete(file.fileHashHexString!!)
     }
 
     fun getFile(hash: String) = getTorrentInfo(null)

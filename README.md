@@ -23,6 +23,7 @@ It also requires mounting the following volumes:
 
 ```
 /finished # The directory where amule will download the finished files
+/config # The directory where amarr will store its configuration, must be persistent
 ```
 
 The container exposes the port 8080, which is the port where amarr will expose the Torznab server for Sonarr/Radarr.
@@ -39,6 +40,7 @@ amarr:
     - AMULE_PASSWORD=secret
   volumes:
     - /path/to/finished:/finished
+    - /path/to/amarr/config:/config
   ports:
     - 8080:8080
 ```
@@ -95,3 +97,4 @@ Amarr has been especially tested with the latest released version of Adunanza.
 - [X] Document the versions of aMule that are supported
 - [ ] Add in memory cache for jamule requests
 - [ ] Query the status of amule client and reconnect if necessary
+- [X] Make categories more resilient, introduce a local database

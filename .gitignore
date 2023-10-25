@@ -6,3 +6,5 @@ build
 
 # Ignore IntelliJ IDEA project-specific settings directory
 .idea
+
+config/

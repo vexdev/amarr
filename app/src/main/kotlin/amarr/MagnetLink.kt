@@ -4,16 +4,20 @@ import com.google.common.io.BaseEncoding.base32
 import io.ktor.http.*
 
 class MagnetLink(
-    val hash: ByteArray,
+    private val hash: ByteArray,
     val name: String,
     val size: Long,
     val trackers: List<String>,
 ) {
     @OptIn(ExperimentalStdlibApi::class)
     fun toEd2kLink(): String {
+        return "ed2k://|file|${name.encodeURLParameter()}|$size|${amuleHexHash()}|/"
+    }
+
+    @OptIn(ExperimentalStdlibApi::class)
+    fun amuleHexHash(): String {
         // unpad the hash to ensure a size of 128 bits, then encode it as hex
-        val hexHash = hash.copyOf(16).toHexString()
-        return "ed2k://|file|${name.encodeURLParameter()}|$size|$hexHash|/"
+        return hash.copyOf(16).toHexString()
     }
 
     fun isAmarr(): Boolean {
