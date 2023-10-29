@@ -90,15 +90,3 @@ Download Client: The name you gave to amarr in the previous step
 
 Amarr is currently using jAmule to connect to amule, which only supports amule versions 2.3.1 to 2.3.3.
 Amarr has been especially tested with the latest released version of Adunanza.
-
-## TODO
-
-- [X] ~~Implement generation of torrent files~~ Using magnet links instead
-- [X] Add support for multiple categories by a local database (Or by amule client?)
-- [X] Publish EC library to maven
-- [X] Dockerize and publish to docker hub
-- [X] Add support for percentage of completion of search
-- [X] Document the versions of aMule that are supported
-- [ ] Add in memory cache for jamule requests
-- [X] Query the status of amule client and reconnect if necessary
-- [X] Make categories more resilient, introduce a local database

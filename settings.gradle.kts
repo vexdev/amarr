@@ -13,6 +13,7 @@ dependencyResolutionManagement {
             version("ktor", "2.3.4")
             version("kotlin", "1.9.10")
             version("bt", "1.10")
+            version("kotest", "5.7.2")
 
             // Libraries
             library("ktor-server-core", "io.ktor", "ktor-server-core").versionRef("ktor")
@@ -23,6 +24,10 @@ dependencyResolutionManagement {
             library("ktor-serialization-kotlinx-json", "io.ktor", "ktor-serialization-kotlinx-json").versionRef("ktor")
             library("jamule", "com.vexdev", "jamule").version("0.5.0")
             library("guava", "com.google.guava", "guava").version("32.1.2-jre")
+            library("kotest-runner-junit5", "io.kotest", "kotest-runner-junit5").versionRef("kotest")
+            library("kotest-assertions-core", "io.kotest", "kotest-assertions-core").versionRef("kotest")
+            library("kotest-property", "io.kotest", "kotest-property").versionRef("kotest")
+            library("mockk", "io.mockk", "mockk").version("1.13.8")
 
             // Plugins
             plugin("kotlin-jvm", "org.jetbrains.kotlin.jvm").versionRef("kotlin")
@@ -30,6 +35,7 @@ dependencyResolutionManagement {
             plugin("jib", "com.google.cloud.tools.jib").version("3.4.0")
 
             // Bundles
+            bundle("kotest", listOf("kotest-runner-junit5", "kotest-assertions-core", "kotest-property"))
             bundle(
                 "ktor-server",
                 listOf(

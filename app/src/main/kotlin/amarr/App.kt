@@ -3,6 +3,7 @@ package amarr
 import amarr.amule.debugApi
 import amarr.category.CategoryStore
 import amarr.torrent.torrentApi
+import amarr.torznab.indexer.AmuleIndexer
 import amarr.torznab.torznabApi
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.serialization.kotlinx.xml.*
@@ -35,6 +36,7 @@ fun main() {
 private fun Application.app() {
     setLogLevel(log)
     val amuleClient = buildClient(log)
+    val amuleIndexer = AmuleIndexer(amuleClient, log)
     val categoryStore = CategoryStore(AMARR_CONFIG_PATH)
 
     install(CallLogging) {
@@ -49,7 +51,7 @@ private fun Application.app() {
         })
     }
     debugApi(amuleClient)
-    torznabApi(amuleClient)
+    torznabApi(amuleIndexer)
     torrentApi(amuleClient, categoryStore)
 }
 
