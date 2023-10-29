@@ -3,13 +3,12 @@ package amarr
 import com.google.common.io.BaseEncoding.base32
 import io.ktor.http.*
 
-class MagnetLink(
+data class MagnetLink(
     private val hash: ByteArray,
     val name: String,
     val size: Long,
     val trackers: List<String>,
 ) {
-    @OptIn(ExperimentalStdlibApi::class)
     fun toEd2kLink(): String {
         return "ed2k://|file|${name.encodeURLParameter()}|$size|${amuleHexHash()}|/"
     }
@@ -33,6 +32,28 @@ class MagnetLink(
                 "&dn=${name.encodeURLParameter()}" +
                 "&xl=$size" +
                 "&tr=${trackers.joinToString("&tr=") { it.encodeURLParameter() }}"
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as MagnetLink
+
+        if (!hash.contentEquals(other.hash)) return false
+        if (name != other.name) return false
+        if (size != other.size) return false
+        if (trackers != other.trackers) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = hash.contentHashCode()
+        result = 31 * result + name.hashCode()
+        result = 31 * result + size.hashCode()
+        result = 31 * result + trackers.hashCode()
+        return result
     }
 
     companion object {
