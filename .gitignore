@@ -8,3 +8,5 @@ build
 .idea
 
 config/
+
+node_modules/
