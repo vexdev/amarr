@@ -46,5 +46,9 @@ jib {
     to {
         image = "vexdev/amarr"
         tags = setOf(version.toString())
+        auth {
+            username = System.getenv("DOCKER_USERNAME")
+            password = System.getenv("DOCKER_PASSWORD")
+        }
     }
 }
