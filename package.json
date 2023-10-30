@@ -1,0 +1,29 @@
+{
+  "release": {
+    "branches": [
+      "main, develop"
+    ],
+    "plugins": [
+      "@semantic-release/commit-analyzer",
+      "@semantic-release/release-notes-generator",
+      "@semantic-release/github",
+      "@semantic-release/git",
+      "@semantic-release/changelog",
+      "@semantic-release/exec",
+      {
+        "verifyConditionsCmd": "./gradlew clean test",
+        "prepareCmd": "./gradlew -Pversion=${nextRelease.version} clean build",
+        "publishCmd": "./gradlew -Pversion=${nextRelease.version} jib"
+      }
+    ]
+  },
+  "dependencies": {
+    "semantic-release": "latest",
+    "@semantic-release/commit-analyzer": "latest",
+    "@semantic-release/exec": "latest",
+    "@semantic-release/git": "latest",
+    "@semantic-release/github": "latest",
+    "@semantic-release/release-notes-generator": "latest",
+    "@semantic-release/changelog": "latest"
+  }
+}
