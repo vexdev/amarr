@@ -1,7 +1,8 @@
 {
   "release": {
     "branches": [
-      "main", "develop"
+      "main",
+      "develop"
     ],
     "plugins": [
       "@semantic-release/commit-analyzer",
@@ -9,12 +10,14 @@
       "@semantic-release/github",
       "@semantic-release/git",
       "@semantic-release/changelog",
-      "@semantic-release/exec",
-      {
-        "verifyConditionsCmd": "./gradlew clean test",
-        "prepareCmd": "./gradlew -Pversion=${nextRelease.version} clean build",
-        "publishCmd": "./gradlew -Pversion=${nextRelease.version} jib"
-      }
+      [
+        "@semantic-release/exec",
+        {
+          "verifyConditionsCmd": "./gradlew clean test",
+          "prepareCmd": "./gradlew -Pversion=${nextRelease.version} clean build",
+          "publishCmd": "./gradlew -Pversion=${nextRelease.version} jib"
+        }
+      ]
     ]
   },
   "dependencies": {
