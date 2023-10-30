@@ -4,6 +4,7 @@ plugins {
 }
 
 rootProject.name = "amarr"
+
 include("app")
 
 dependencyResolutionManagement {
