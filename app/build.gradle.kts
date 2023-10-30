@@ -5,6 +5,8 @@ plugins {
     application
 }
 
+println("Version is $version")
+
 repositories {
     mavenCentral()
     mavenLocal()
@@ -43,6 +45,6 @@ jib {
     }
     to {
         image = "vexdev/amarr"
-        tags = setOf("1.3.0")
+        tags = setOf(version.toString())
     }
 }
