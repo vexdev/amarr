@@ -1,0 +1,13 @@
+branches:
+  - main
+  - develop
+plugins:
+  - "@semantic-release/github"
+  - "@semantic-release/git"
+  - "@semantic-release/changelog"
+  - "@semantic-release/commit-analyzer"
+  - "@semantic-release/release-notes-generator"
+  - - "@semantic-release/exec"
+    - verifyConditionsCmd: "./gradlew clean test"
+      prepareCmd: "./gradlew -Pversion=${nextRelease.version} clean build"
+      publishCmd: "./gradlew -Pversion=${nextRelease.version} jib"
