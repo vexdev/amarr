@@ -3,18 +3,14 @@ package amarr.torrent
 import amarr.category.CategoryStore
 import amarr.torrent.model.Category
 import amarr.torrent.model.Preferences
-import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import jamule.AmuleClient
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 
 fun Application.torrentApi(amuleClient: AmuleClient, categoryStore: CategoryStore) {
     val service = TorrentService(amuleClient, categoryStore, log)
-    val format = Json { encodeDefaults = true }
     routing {
         get("/api/v2/app/webapiVersion") {
             call.respondText("2.8.19") // Emulating qBittorrent API version 2.8.19
@@ -27,7 +23,7 @@ fun Application.torrentApi(amuleClient: AmuleClient, categoryStore: CategoryStor
             call.respondText("Ok.")
         }
         get("/api/v2/app/preferences") {
-            call.respondText(format.encodeToString(Preferences()), ContentType.Application.Json)
+            call.respond(Preferences())
         }
         post("/api/v2/torrents/add") {
             val params = call.receiveParameters()
@@ -51,11 +47,11 @@ fun Application.torrentApi(amuleClient: AmuleClient, categoryStore: CategoryStor
             call.respondText("Ok.")
         }
         get("/api/v2/torrents/categories") {
-            call.respondText(format.encodeToString(service.getCategories()), ContentType.Application.Json)
+            call.respond(service.getCategories())
         }
         get("/api/v2/torrents/info") {
             val category = call.request.queryParameters["category"]
-            call.respondText(format.encodeToString(service.getTorrentInfo(category)), ContentType.Application.Json)
+            call.respond(service.getTorrentInfo(category))
         }
         post("/api/v2/torrents/delete") {
             val params = call.receiveParameters()
@@ -75,13 +71,13 @@ fun Application.torrentApi(amuleClient: AmuleClient, categoryStore: CategoryStor
             val hash = call.request.queryParameters["hash"]!!
             call.application.log.debug("Received get files request with hash: {}", hash)
             val response = listOf(service.getFile(hash))
-            call.respondText(format.encodeToString(response), ContentType.Application.Json)
+            call.respond(response)
         }
         get("/api/v2/torrents/properties") {
             val hash = call.request.queryParameters["hash"]!!
             call.application.log.debug("Received get properties request with hash: {}", hash)
             val response = service.getTorrentProperties(hash)
-            call.respondText(format.encodeToString(response), ContentType.Application.Json)
+            call.respond(response)
         }
     }
 }

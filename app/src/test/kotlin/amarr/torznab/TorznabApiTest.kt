@@ -2,6 +2,7 @@ package amarr.torznab
 
 import amarr.torznab.indexer.AmuleIndexer
 import amarr.torznab.model.Caps
+import amarr.torznab.model.Feed
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.StringSpec
 import io.ktor.client.request.*
@@ -47,7 +48,18 @@ class TorznabApiTest : StringSpec({
             application {
                 torznabApi(amuleIndexer)
             }
-            every { amuleIndexer.search("test", 0, 100) } returns mockk()
+            every {
+                amuleIndexer.search(
+                    "test",
+                    0,
+                    100
+                )
+            } returns Feed(
+                channel = Feed.Channel(
+                    response = Feed.Channel.Response(offset = 0, total = 0),
+                    item = emptyList()
+                )
+            )
             client.get("/api?t=search&q=test&offset=0&limit=100")
             verify { amuleIndexer.search("test", 0, 100) }
         }
