@@ -2,9 +2,11 @@ package amarr.torznab
 
 import amarr.torznab.indexer.AmuleIndexer
 import amarr.torznab.indexer.Indexer
+import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import nl.adaptivity.xmlutil.serialization.XML
 
 
 fun Application.torznabApi(amuleIndexer: AmuleIndexer) {
@@ -17,11 +19,12 @@ fun Application.torznabApi(amuleIndexer: AmuleIndexer) {
 
 private suspend fun ApplicationCall.handleRequests(indexer: Indexer) {
     application.log.debug("Handling torznab request")
+    val xmlFormat = XML // This API uses XML instead of JSON
     request.queryParameters["t"]?.let {
         when (it) {
             "caps" -> {
                 application.log.debug("Handling caps request")
-                respond(indexer.capabilities())
+                respondText(xmlFormat.encodeToString(indexer.capabilities()), contentType = ContentType.Application.Xml)
             }
 
             "search" -> {
@@ -29,7 +32,10 @@ private suspend fun ApplicationCall.handleRequests(indexer: Indexer) {
                 val offset = request.queryParameters["offset"]?.toIntOrNull() ?: 0
                 val limit = request.queryParameters["limit"]?.toIntOrNull() ?: 100
                 application.log.debug("Handling search request: {}, {}, {}", query, offset, limit)
-                respond(indexer.search(query, offset, limit))
+                respondText(
+                    xmlFormat.encodeToString(indexer.search(query, offset, limit)),
+                    contentType = ContentType.Application.Xml
+                )
             }
 
             else -> throw IllegalArgumentException("Unknown action: $it")

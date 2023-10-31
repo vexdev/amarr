@@ -6,7 +6,6 @@ import amarr.torrent.torrentApi
 import amarr.torznab.indexer.AmuleIndexer
 import amarr.torznab.torznabApi
 import io.ktor.serialization.kotlinx.json.*
-import io.ktor.serialization.kotlinx.xml.*
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
@@ -45,11 +44,11 @@ internal fun Application.app() {
         level = Level.DEBUG
     }
     install(ContentNegotiation) {
-        xml()
         json(Json {
             ignoreUnknownKeys = true
             isLenient = true
             prettyPrint = true
+            encodeDefaults = true
         })
     }
     debugApi(amuleClient)
