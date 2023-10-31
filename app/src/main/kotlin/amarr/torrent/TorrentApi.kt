@@ -9,8 +9,8 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import jamule.AmuleClient
 
-fun Application.torrentApi(amuleClient: AmuleClient, categoryStore: CategoryStore) {
-    val service = TorrentService(amuleClient, categoryStore, log)
+fun Application.torrentApi(amuleClient: AmuleClient, categoryStore: CategoryStore, finishedPath: String) {
+    val service = TorrentService(amuleClient, categoryStore, finishedPath, log)
     routing {
         get("/api/v2/app/webapiVersion") {
             call.respondText("2.8.19") // Emulating qBittorrent API version 2.8.19
