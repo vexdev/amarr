@@ -18,10 +18,10 @@ dependencies {
     implementation(libs.guava)
     implementation("ch.qos.logback:logback-classic:1.4.11")
     implementation("io.ktor:ktor-server-call-logging-jvm:2.3.5")
-    implementation("io.ktor:ktor-server-default-headers-jvm:2.3.4")
+    implementation("io.ktor:ktor-server-default-headers-jvm:2.3.5")
     testImplementation(libs.bundles.kotest)
     testImplementation(libs.mockk)
-    testImplementation("io.ktor:ktor-server-test-host-jvm:2.3.4")
+    testImplementation("io.ktor:ktor-server-test-host-jvm:2.3.5")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:1.9.10")
 }
 
