@@ -14,6 +14,7 @@ import jamule.model.FileStatus
 class TorrentService(
     private val amuleClient: AmuleClient,
     private val categoryStore: CategoryStore,
+    private val finishedPath: String,
     private val log: Logger
 ) {
 
@@ -36,7 +37,7 @@ class TorrentService(
                         name = dl.fileName!!,
                         size = dl.sizeFull!!,
                         total_size = dl.sizeFull!!,
-                        save_path = AMULE_FINISHED_PATH,
+                        save_path = finishedPath,
                         downloaded = dl.sizeDone!!,
                         progress = dl.sizeDone!!.toDouble() / dl.sizeFull!!.toDouble(),
                         priority = dl.downPrio.toInt(),

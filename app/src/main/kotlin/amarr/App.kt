@@ -1,7 +1,7 @@
 package amarr
 
 import amarr.amule.debugApi
-import amarr.category.CategoryStore
+import amarr.category.FileCategoryStore
 import amarr.torrent.torrentApi
 import amarr.torznab.indexer.AmuleIndexer
 import amarr.torznab.torznabApi
@@ -38,7 +38,7 @@ internal fun Application.app() {
     setLogLevel(log)
     val amuleClient = buildClient(log)
     val amuleIndexer = AmuleIndexer(amuleClient, log)
-    val categoryStore = CategoryStore(AMARR_CONFIG_PATH)
+    val categoryStore = FileCategoryStore(AMARR_CONFIG_PATH)
 
     install(CallLogging) {
         level = Level.DEBUG
@@ -53,7 +53,7 @@ internal fun Application.app() {
     }
     debugApi(amuleClient)
     torznabApi(amuleIndexer)
-    torrentApi(amuleClient, categoryStore)
+    torrentApi(amuleClient, categoryStore, AMULE_FINISHED_PATH)
 }
 
 private fun setLogLevel(logger: Logger) {
