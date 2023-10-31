@@ -1,4 +1,7 @@
 # Amarr - Amule *arr Connector
+![Docker Image Version (latest semver)](https://img.shields.io/docker/v/vexdev/amarr)
+[![semantic-release: angular](https://img.shields.io/badge/semantic--release-angular-e10079?logo=semantic-release)](https://github.com/semantic-release/semantic-release)
+
 
 This connector allows using amule as a download client for [Sonarr](https://sonarr.tv/)
 and [Radarr](https://radarr.video/).
