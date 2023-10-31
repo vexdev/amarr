@@ -15,6 +15,7 @@ import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.util.logging.*
 import jamule.AmuleClient
 import kotlinx.serialization.json.Json
+import org.jetbrains.annotations.VisibleForTesting
 import org.slf4j.event.Level
 
 lateinit var AMULE_PORT: String
@@ -33,7 +34,8 @@ fun main() {
     }.start(wait = true)
 }
 
-private fun Application.app() {
+@VisibleForTesting
+internal fun Application.app() {
     setLogLevel(log)
     val amuleClient = buildClient(log)
     val amuleIndexer = AmuleIndexer(amuleClient, log)
