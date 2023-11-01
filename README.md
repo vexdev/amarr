@@ -1,5 +1,6 @@
 # Amarr - Amule *arr Connector
 ![Docker Image Version (latest semver)](https://img.shields.io/docker/v/vexdev/amarr)
+![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/vexdev/amarr/release.yml)
 [![semantic-release: angular](https://img.shields.io/badge/semantic--release-angular-e10079?logo=semantic-release)](https://github.com/semantic-release/semantic-release)
 
 
@@ -19,14 +20,11 @@ It requires the following environment variables:
 AMULE_HOST: amule # The host where amule is running, for docker containers it's usually the name of the container
 AMULE_PORT: 4712 # The port where amule is listening with the EC protocol
 AMULE_PASSWORD: secret # The password to connect to amule
-AMARR_URL: http://amarr:8080 # The url where amarr will be listening, for docker containers it's usually the name of the container
 
 Optional parameters:
 AMULE_FINISHED_PATH: /finished # The directory where amule will download the finished files
 AMARR_LOG_LEVEL: INFO # The log level of amarr, defaults to INFO
 ```
-
-Note: **AMARR_URL** is used to build the url of the torrent files, so it must be accessible from Sonarr/Radarr.
 
 It also requires mounting the following volumes:
 
