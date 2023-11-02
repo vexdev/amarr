@@ -1,6 +1,5 @@
 package amarr.torrent
 
-import amarr.AMULE_FINISHED_PATH
 import amarr.MagnetLink
 import amarr.category.CategoryStore
 import amarr.torrent.model.*
@@ -66,7 +65,7 @@ class TorrentService(
                         name = dl.fileName!!,
                         size = dl.sizeFull!!,
                         total_size = dl.sizeFull!!,
-                        save_path = AMULE_FINISHED_PATH,
+                        save_path = finishedPath,
                         dlspeed = 0,
                         downloaded = dl.sizeFull!!,
                         progress = 1.0,

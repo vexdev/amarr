@@ -1,23 +1,25 @@
 package amarr.torznab
 
 import amarr.torznab.indexer.AmuleIndexer
+import amarr.torznab.indexer.ddunlimitednet.DdunlimitednetIndexer
 import amarr.torznab.model.Caps
 import amarr.torznab.model.Feed
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.StringSpec
 import io.ktor.client.request.*
 import io.ktor.server.testing.*
-import io.mockk.every
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.mockk
-import io.mockk.verify
 
 class TorznabApiTest : StringSpec({
     val amuleIndexer = mockk<AmuleIndexer>()
+    val ddunlimitednetIndexer = mockk<DdunlimitednetIndexer>()
 
     "should throw exception when missing action" {
         testApplication {
             application {
-                torznabApi(amuleIndexer)
+                torznabApi(amuleIndexer, ddunlimitednetIndexer)
             }
             shouldThrow<IllegalArgumentException> { client.get("/api") }
         }
@@ -26,7 +28,7 @@ class TorznabApiTest : StringSpec({
     "should throw exception on unknown action" {
         testApplication {
             application {
-                torznabApi(amuleIndexer)
+                torznabApi(amuleIndexer, ddunlimitednetIndexer)
             }
             shouldThrow<IllegalArgumentException> { client.get("/api?t=unknown") }
         }
@@ -35,20 +37,20 @@ class TorznabApiTest : StringSpec({
     "should get capabilities from amule indexer when called on /api" {
         testApplication {
             application {
-                torznabApi(amuleIndexer)
+                torznabApi(amuleIndexer, ddunlimitednetIndexer)
             }
-            every { amuleIndexer.capabilities() } returns Caps()
+            coEvery { amuleIndexer.capabilities() } returns Caps()
             client.get("/api?t=caps")
-            verify { amuleIndexer.capabilities() }
+            coVerify { amuleIndexer.capabilities() }
         }
     }
 
     "should pass query, offset and limits to amule indexer when called on /api" {
         testApplication {
             application {
-                torznabApi(amuleIndexer)
+                torznabApi(amuleIndexer, ddunlimitednetIndexer)
             }
-            every {
+            coEvery {
                 amuleIndexer.search(
                     "test",
                     0,
@@ -61,7 +63,7 @@ class TorznabApiTest : StringSpec({
                 )
             )
             client.get("/api?t=search&q=test&offset=0&limit=100")
-            verify { amuleIndexer.search("test", 0, 100) }
+            coVerify { amuleIndexer.search("test", 0, 100) }
         }
     }
 })

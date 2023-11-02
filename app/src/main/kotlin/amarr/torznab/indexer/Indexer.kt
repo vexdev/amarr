@@ -8,11 +8,11 @@ interface Indexer {
     /**
      * Given a paginated query, returns a [Feed] with the results.
      */
-    fun search(query: String, offset: Int, limit: Int): Feed
+    suspend fun search(query: String, offset: Int, limit: Int): Feed
 
     /**
      * Returns the capabilities of this indexer.
      */
-    fun capabilities(): Caps
+    suspend fun capabilities(): Caps
 
 }

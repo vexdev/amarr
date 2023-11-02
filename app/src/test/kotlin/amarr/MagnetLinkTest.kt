@@ -25,4 +25,13 @@ class MagnetLinkTest : StringSpec({
             parsed.toEd2kLink() shouldBe "ed2k://|file|${magnet.name.encodeURLParameter()}|${magnet.size}|${magnet.amuleHexHash()}|/"
         }
     }
+
+    "should parse sample ed2k" {
+        val ed2k = "ed2k://|file|Dj%20Matrix%20&%20Matt%20Joe%20-%20Musica%20da%20giostra,%20Vol.%2010%20(2023).rar|152488462|0320C47B3BAA01F8D5F42CD7C05CE28D|h=O74TQQWUVF24E7WD25UD57Z45GHIDLZZ|/"
+        val parsed = MagnetLink.fromEd2k(ed2k)
+        parsed.isAmarr() shouldBe true
+        parsed.name shouldBe "Dj Matrix & Matt Joe - Musica da giostra, Vol. 10 (2023).rar"
+        parsed.size shouldBe 152488462
+        parsed.amuleHexHash().uppercase() shouldBe "0320C47B3BAA01F8D5F42CD7C05CE28D"
+    }
 })

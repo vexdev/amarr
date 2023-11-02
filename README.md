@@ -8,7 +8,9 @@ This connector allows using amule as a download client for [Sonarr](https://sona
 and [Radarr](https://radarr.video/).
 It works by emulating a torrent client, so Sonarr and Radarr will manage your downloads as if they were torrents.
 
-Makes use of [jAmule](https://github.com/vexdev/jamule) to connect to amule.
+Makes use of [jAmule](https://github.com/vexdev/jamule) to connect to amule, which only supports amule versions **2.3.1** to **2.3.3**.
+
+Amarr has been especially tested with the latest released version of [Adunanza](https://www.adunanza.net/).
 
 ## Installation
 
@@ -50,21 +52,28 @@ amarr:
     - 8080:8080
 ```
 
-## Radarr/Sonarr configuration
+## Radarr/Sonarr configuration (3 easy steps)
 
-### Configure amarr as a torrent indexer
+### 1. Configure amarr as a torrent indexer
+
+Amarr provides multiple indexers with different capabilities. 
+Each indexer implements the Torznab protocol, so it can be used as a torrent indexer for Sonarr/Radarr.
 
 You need to configure Sonarr/Radarr to use amarr as a torrent indexer. You can do that by adding a new Torznab indexer
 with the following settings:
 
 ```
 Name: Any name you want
-Url: http://amarr:8080
+Url: http://amarr:8080/indexer/<indexer-type>
 ```
+
+Where `<indexer-type>` is [one of the indexers supported by amarr](#indexers).
+
+Please note that you will have to do this for every indexer you want to use with amarr.
 
 You can leave the rest of the settings as default for now, we will come back to them later.
 
-### Configure amarr as a download client
+### 2. Configure amarr as a download client
 
 You will need then to add the download client. You can do that by adding a new download client of type qBittorrent with
 the following settings:
@@ -77,9 +86,9 @@ Port: 8080 # The port where amarr is listening
 Priority: 50 # This is the lowest possible priority, so Sonarr/Radarr will prefer other download clients
 ```
 
-### Configure amarr as a preferred download client for its indexer
+### 3. Configure amarr as a preferred download client for its indexer
 
-You need to configure Sonarr/Radarr to prefer amarr as a download client for the indexer we created before.
+You need to configure Sonarr/Radarr to prefer amarr as a download client for any indexers we created before.
 You can do that by going to the **indexer settings** and setting the following values for Amarr:
 
 ```
@@ -87,7 +96,26 @@ You can do that by going to the **indexer settings** and setting the following v
 Download Client: The name you gave to amarr in the previous step
 ```
 
-### Supported amule versions
+Remember that you will have to do this for every indexer you want to use with amarr.
 
-Amarr is currently using jAmule to connect to amule, which only supports amule versions 2.3.1 to 2.3.3.
-Amarr has been especially tested with the latest released version of Adunanza.
+## Indexers
+
+### `amule`
+
+This indexer will search for files in amule through the kad/eD2k network.
+
+It is very slow and not very reliable. Additionally, files on the kad/eD2k network are not well reviewed, so you may end
+up downloading fake files.
+
+Does not require any additional configuration.
+
+### `ddunlimitednet`
+
+This indexer will search for files in [ddunlimited.net](https://ddunlimited.net/).
+
+Requires the following environment variables to be set:
+
+```
+DDUNLIMITEDNET_USERNAME: username # The username to connect to ddunlimited.net
+DDUNLIMITEDNET_PASSWORD: password # The password to connect to ddunlimited.net
+```
