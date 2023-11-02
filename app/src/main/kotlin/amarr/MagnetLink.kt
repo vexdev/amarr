@@ -79,6 +79,20 @@ data class MagnetLink(
                 )
             }
 
+        @OptIn(ExperimentalStdlibApi::class)
+        fun fromEd2k(ed2k: String): MagnetLink = ed2k
+            .substringAfter("ed2k://|file|")
+            .substringBefore("|/")
+            .split("|")
+            .let { els ->
+                MagnetLink(
+                    hash = els[2].hexToByteArray(),
+                    name = els[0].decodeURLPart(),
+                    size = els[1].toLong(),
+                    trackers = listOf(AMARR_TRACKER)
+                )
+            }
+
         const val AMARR_TRACKER = "http://amarr-reserved"
     }
 }

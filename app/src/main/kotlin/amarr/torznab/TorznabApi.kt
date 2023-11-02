@@ -2,6 +2,7 @@ package amarr.torznab
 
 import amarr.torznab.indexer.AmuleIndexer
 import amarr.torznab.indexer.Indexer
+import amarr.torznab.indexer.ddunlimitednet.DdunlimitednetIndexer
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
@@ -9,10 +10,17 @@ import io.ktor.server.routing.*
 import nl.adaptivity.xmlutil.serialization.XML
 
 
-fun Application.torznabApi(amuleIndexer: AmuleIndexer) {
+fun Application.torznabApi(amuleIndexer: AmuleIndexer, ddunlimitednetIndexer: DdunlimitednetIndexer) {
     routing {
+        // Kept for legacy reasons
         get("/api") {
             call.handleRequests(amuleIndexer)
+        }
+        get("/indexer/amule/api") {
+            call.handleRequests(amuleIndexer)
+        }
+        get("indexer/ddunlimitednet/api") {
+            call.handleRequests(ddunlimitednetIndexer)
         }
     }
 }

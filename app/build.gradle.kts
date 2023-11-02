@@ -14,15 +14,17 @@ repositories {
 
 dependencies {
     implementation(libs.bundles.ktor.server)
+    implementation(libs.bundles.ktor.client)
     implementation(libs.jamule)
     implementation(libs.guava)
-    implementation("ch.qos.logback:logback-classic:1.4.11")
-    implementation("io.ktor:ktor-server-call-logging-jvm:2.3.5")
-    implementation("io.ktor:ktor-server-default-headers-jvm:2.3.5")
+    implementation(libs.logback)
+    implementation(libs.commons.text)
+
     testImplementation(libs.bundles.kotest)
     testImplementation(libs.mockk)
-    testImplementation("io.ktor:ktor-server-test-host-jvm:2.3.5")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:1.9.20")
+    testImplementation(libs.ktor.server.test.host.jvm)
+    testImplementation(libs.ktor.client.mock)
+    testImplementation(libs.kotlin.test.junit)
 }
 
 java {
