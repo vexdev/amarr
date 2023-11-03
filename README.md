@@ -1,14 +1,14 @@
-# Amarr - Amule *arr Connector
+# Amarr - aMule *arr Connector
 ![Docker Image Version (latest semver)](https://img.shields.io/docker/v/vexdev/amarr)
 ![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/vexdev/amarr/release.yml)
 [![semantic-release: angular](https://img.shields.io/badge/semantic--release-angular-e10079?logo=semantic-release)](https://github.com/semantic-release/semantic-release)
 
 
-This connector allows using amule as a download client for [Sonarr](https://sonarr.tv/)
+This connector allows using aMule as a download client for [Sonarr](https://sonarr.tv/)
 and [Radarr](https://radarr.video/).
 It works by emulating a torrent client, so Sonarr and Radarr will manage your downloads as if they were torrents.
 
-Makes use of [jAmule](https://github.com/vexdev/jamule) to connect to amule, which only supports amule versions **2.3.1** to **2.3.3**.
+Makes use of [jaMule](https://github.com/vexdev/jaMule) to connect to aMule, which only supports aMule versions **2.3.1** to **2.3.3**.
 
 Amarr has been especially tested with the latest released version of [Adunanza](https://www.adunanza.net/).
 
@@ -19,12 +19,12 @@ Amarr runs as a docker container. You can find it in [Docker Hub](https://hub.do
 It requires the following environment variables:
 
 ```
-AMULE_HOST: amule # The host where amule is running, for docker containers it's usually the name of the container
-AMULE_PORT: 4712 # The port where amule is listening with the EC protocol
-AMULE_PASSWORD: secret # The password to connect to amule
+AMULE_HOST: aMule # The host where aMule is running, for docker containers it's usually the name of the container
+AMULE_PORT: 4712 # The port where aMule is listening with the EC protocol
+AMULE_PASSWORD: secret # The password to connect to aMule
 
 Optional parameters:
-AMULE_FINISHED_PATH: /finished # The directory where amule will download the finished files
+AMULE_FINISHED_PATH: /finished # The directory where aMule will download the finished files
 AMARR_LOG_LEVEL: INFO # The log level of amarr, defaults to INFO
 ```
 
@@ -43,7 +43,7 @@ amarr:
   image: vexdev/amarr:latest
   container_name: amarr
   environment:
-    - AMULE_HOST=amule
+    - AMULE_HOST=aMule
     - AMULE_PORT=4712
     - AMULE_PASSWORD=secret
   volumes:
@@ -52,31 +52,13 @@ amarr:
     - 8080:8080
 ```
 
-## Radarr/Sonarr configuration (3 easy steps)
+## Radarr/Sonarr configuration (2 easy steps)
 
-### 1. Configure amarr as a torrent indexer
+### 1. Configure amarr as a download client
 
-Amarr provides multiple indexers with different capabilities. 
-Each indexer implements the Torznab protocol, so it can be used as a torrent indexer for Sonarr/Radarr.
+You will need to add the download client. 
 
-You need to configure Sonarr/Radarr to use amarr as a torrent indexer. You can do that by adding a new Torznab indexer
-with the following settings:
-
-```
-Name: Any name you want
-Url: http://amarr:8080/indexer/<indexer-type>
-```
-
-Where `<indexer-type>` is [one of the indexers supported by amarr](#indexers).
-
-Please note that you will have to do this for every indexer you want to use with amarr.
-
-You can leave the rest of the settings as default for now, we will come back to them later.
-
-### 2. Configure amarr as a download client
-
-You will need then to add the download client. You can do that by adding a new download client of type qBittorrent with
-the following settings:
+You can do that by adding a new download client of type **qBittorrent** with the following settings:
 
 ```
 ! Ensure you pressed the "Show advanced settings" button
@@ -86,30 +68,40 @@ Port: 8080 # The port where amarr is listening
 Priority: 50 # This is the lowest possible priority, so Sonarr/Radarr will prefer other download clients
 ```
 
-### 3. Configure amarr as a preferred download client for its indexer
+### 2. Configure amarr as a torrent indexer
 
-You need to configure Sonarr/Radarr to prefer amarr as a download client for any indexers we created before.
-You can do that by going to the **indexer settings** and setting the following values for Amarr:
+Amarr provides multiple indexers with different capabilities. 
+Each indexer implements the **Torznab** protocol, so it can be used as a torrent indexer for Sonarr/Radarr.
+
+Add a new **Torznab indexer** with the following settings:
 
 ```
 ! Ensure you pressed the "Show advanced settings" button
+Name: Any name you want
+Url: http://amarr:8080/indexer/<indexer-type>
 Download Client: The name you gave to amarr in the previous step
 ```
 
-Remember that you will have to do this for every indexer you want to use with amarr.
+**Note:** You need to configure Sonarr/Radarr to prefer amarr as a download client for any indexers we created before.
+
+**Note:** `<indexer-type>` is [one of the indexers supported by amarr](#indexers).
+
+**You will have to do this for every indexer you want to use with amarr.**
 
 ## Indexers
 
-### `amule`
+### `aMule`
 
-This indexer will search for files in amule through the kad/eD2k network.
+This indexer will search for files in aMule through the kad/eD2k network.
 
 It is very slow and not very reliable. Additionally, files on the kad/eD2k network are not well reviewed, so you may end
 up downloading fake files.
 
 Does not require any additional configuration.
 
-### `ddunlimitednet`
+### `ddunlimitednet` - BETA!!
+
+_⚠️⚠️⚠️ This indexer is still in beta. It may not work as expected. ⚠️⚠️⚠️_
 
 This indexer will search for files in [ddunlimited.net](https://ddunlimited.net/).
 
