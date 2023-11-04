@@ -38,7 +38,7 @@ dependencyResolutionManagement {
             library("mockk", "io.mockk", "mockk").version("1.13.8")
             library("logback", "ch.qos.logback", "logback-classic").version("1.4.11")
             library("kotlin-test-junit", "org.jetbrains.kotlin", "kotlin-test-junit").versionRef("kotlin")
-            library("commons-text", "org.apache.commons", "commons-text").version("1.9")
+            library("commons-text", "org.apache.commons", "commons-text").version("1.11.0")
 
             // Plugins
             plugin("kotlin-jvm", "org.jetbrains.kotlin.jvm").versionRef("kotlin")
