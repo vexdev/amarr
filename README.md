@@ -90,7 +90,7 @@ Download Client: The name you gave to amarr in the previous step
 
 ## Indexers
 
-### `aMule`
+### `amule`
 
 This indexer will search for files in aMule through the kad/eD2k network.
 
