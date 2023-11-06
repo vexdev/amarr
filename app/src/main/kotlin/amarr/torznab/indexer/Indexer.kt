@@ -8,7 +8,7 @@ interface Indexer {
     /**
      * Given a paginated query, returns a [Feed] with the results.
      */
-    suspend fun search(query: String, offset: Int, limit: Int): Feed
+    suspend fun search(query: String, offset: Int, limit: Int, cat: List<Int>): Feed
 
     /**
      * Returns the capabilities of this indexer.

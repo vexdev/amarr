@@ -103,6 +103,8 @@ Does not require any additional configuration.
 
 _⚠️⚠️⚠️ This indexer is still in beta. It may not work as expected. ⚠️⚠️⚠️_
 
+ddunlimited.net is very restrictive with the number of searches you can perform, so this indexer is subject to rate limits.
+
 This indexer will search for files in [ddunlimited.net](https://ddunlimited.net/).
 
 Requires the following environment variables to be set:

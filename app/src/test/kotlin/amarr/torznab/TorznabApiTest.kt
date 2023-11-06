@@ -54,7 +54,8 @@ class TorznabApiTest : StringSpec({
                 amuleIndexer.search(
                     "test",
                     0,
-                    100
+                    100,
+                    listOf()
                 )
             } returns Feed(
                 channel = Feed.Channel(
@@ -63,7 +64,7 @@ class TorznabApiTest : StringSpec({
                 )
             )
             client.get("/api?t=search&q=test&offset=0&limit=100")
-            coVerify { amuleIndexer.search("test", 0, 100) }
+            coVerify { amuleIndexer.search("test", 0, 100, listOf()) }
         }
     }
 })

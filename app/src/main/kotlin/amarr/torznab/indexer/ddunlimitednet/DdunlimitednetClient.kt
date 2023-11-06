@@ -30,17 +30,19 @@ class DdunlimitednetClient(
     /**
      * Tries to search for a query, returning a list of ed2k links if successful.
      */
-    suspend fun search(query: String): Result<List<String>> = httpClient.prepareForm(
+    suspend fun search(query: String, cat: List<Int>): Result<List<String>> = httpClient.prepareForm(
         formParameters = Parameters.build {
             append(
                 "keywords",
                 query
-            ) // TODO: This needs to be encoded somehow, like "this is us" becomes "this+is+us", obviously not url-encoded nor html-encoded, but maybe just a space replacement?
-            append("terms", "all")
+            )
+            append("terms", "any")
             append("gsearch", "0")
             append("author", "")
             append("sv", "0")
-            append("fid%5B%5D", "1577")
+            for (category in cat) {
+                append("fid%5B%5D", category.toString())
+            }
             append("sc", "1")
             append("sf", "titleonly")
             append("sr", "posts")

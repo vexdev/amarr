@@ -28,7 +28,7 @@ class AmuleIndexerTest : StringSpec({
 
     "when empty queried should return only one result within that category" {
         val indexer = AmuleIndexer(mockClient, logger)
-        val results = indexer.search("", 0, 1000)
+        val results = indexer.search("", 0, 1000, listOf())
         results.channel.response.total shouldBe 1
         results.channel.response.offset shouldBe 0
         results.channel.item.size shouldBe 1
@@ -55,7 +55,7 @@ class AmuleIndexerTest : StringSpec({
         )
         every { mockClient.searchSync(any()) } returns Result.success(SearchResultsResponse(listOf(searchFile)))
         val indexer = AmuleIndexer(mockClient, logger)
-        val result = indexer.search("test", 0, 1000)
+        val result = indexer.search("test", 0, 1000, listOf())
         verify { mockClient.searchSync("test") }
         result.channel.response.total shouldBe 1
         result.channel.response.offset shouldBe 0
