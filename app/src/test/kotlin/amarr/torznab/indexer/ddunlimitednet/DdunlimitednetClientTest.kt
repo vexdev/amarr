@@ -16,7 +16,7 @@ class DdunlimitednetClientTest : StringSpec({
         val mockEngine = MockEngine { _ -> respond(ByteReadChannel(html), OK) }
         val client = DdunlimitednetClient(mockEngine, "user", "pass", logger)
 
-        val result = client.search("matrix")
+        val result = client.search("matrix", listOf())
 
         result.isSuccess shouldBe true
         result.getOrThrow().size shouldBe 110
@@ -29,7 +29,7 @@ class DdunlimitednetClientTest : StringSpec({
         val mockEngine = MockEngine { _ -> respond(ByteReadChannel(html), OK) }
         val client = DdunlimitednetClient(mockEngine, "user", "pass", logger)
 
-        val result = client.search("matrix")
+        val result = client.search("matrix", listOf())
 
         result.isSuccess shouldBe true
         result.getOrThrow().size shouldBe 1

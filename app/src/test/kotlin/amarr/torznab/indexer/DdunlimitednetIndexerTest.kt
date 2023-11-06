@@ -17,9 +17,9 @@ class DdunlimitednetIndexerTest : StringSpec({
 
     "should convert links to feed items" {
         val tested = DdunlimitednetIndexer(client, logger)
-        coEvery { client.search(any()) } returns Result.success(listOf(sampleLink))
+        coEvery { client.search(any(), listOf()) } returns Result.success(listOf(sampleLink))
 
-        val result = tested.search("matrix", 0, 100)
+        val result = tested.search("matrix", 0, 100, listOf())
 
         result shouldBe Feed(
             channel = Feed.Channel(

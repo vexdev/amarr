@@ -10,7 +10,7 @@ import jamule.response.SearchResultsResponse.SearchFile
 
 class AmuleIndexer(private val amuleClient: AmuleClient, private val log: Logger) : Indexer {
 
-    override suspend fun search(query: String, offset: Int, limit: Int): Feed {
+    override suspend fun search(query: String, offset: Int, limit: Int, cat: List<Int>): Feed {
         log.debug("Starting search for query: {}, offset: {}, limit: {}", query, offset, limit)
         if (query.isBlank()) {
             log.debug("Empty query, returning empty response")

@@ -2,6 +2,8 @@ package amarr.torznab
 
 import amarr.torznab.indexer.AmuleIndexer
 import amarr.torznab.indexer.Indexer
+import amarr.torznab.indexer.ThrottledException
+import amarr.torznab.indexer.UnauthorizedException
 import amarr.torznab.indexer.ddunlimitednet.DdunlimitednetIndexer
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -39,11 +41,20 @@ private suspend fun ApplicationCall.handleRequests(indexer: Indexer) {
                 val query = request.queryParameters["q"].orEmpty()
                 val offset = request.queryParameters["offset"]?.toIntOrNull() ?: 0
                 val limit = request.queryParameters["limit"]?.toIntOrNull() ?: 100
-                application.log.debug("Handling search request: {}, {}, {}", query, offset, limit)
-                respondText(
-                    xmlFormat.encodeToString(indexer.search(query, offset, limit)),
-                    contentType = ContentType.Application.Xml
-                )
+                val cat = request.queryParameters["cat"]?.split(",")?.map { cat -> cat.toInt() } ?: emptyList()
+                application.log.debug("Handling search request: {}, {}, {}, {}", query, offset, limit, cat)
+                try {
+                    respondText(
+                        xmlFormat.encodeToString(indexer.search(query, offset, limit, cat)),
+                        contentType = ContentType.Application.Xml
+                    )
+                } catch (e: ThrottledException) {
+                    application.log.warn("Throttled, returning 403")
+                    respondText("You are being throttled. Retry in a few minutes.", status = HttpStatusCode.Forbidden)
+                } catch (e: UnauthorizedException) {
+                    application.log.warn("Unauthorized, returning 401")
+                    respondText("Unauthorized, check your credentials.", status = HttpStatusCode.Unauthorized)
+                }
             }
 
             else -> throw IllegalArgumentException("Unknown action: $it")

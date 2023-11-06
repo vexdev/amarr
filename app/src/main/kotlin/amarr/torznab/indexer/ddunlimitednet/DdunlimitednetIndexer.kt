@@ -13,14 +13,16 @@ class DdunlimitednetIndexer(
     private val log: Logger
 ) : Indexer {
 
-    override suspend fun search(query: String, offset: Int, limit: Int): Feed {
-        log.info("Searching for query: {}", query)
-        val result = client.search(query).recover { error ->
+    override suspend fun search(query: String, offset: Int, limit: Int, cat: List<Int>): Feed {
+        log.info("Searching for query: `{}` in categories: `{}`", query, cat)
+        // Here "tutto" is simply a word that will match something in all supported categories
+        val cleanQuery = query.ifEmpty { "tutto" }
+        val result = client.search(cleanQuery, cat).recover { error ->
             when (error) {
                 is UnauthorizedException -> {
                     log.info("Unauthorized, logging in...")
                     client.login()
-                    client.search(query).getOrThrow()
+                    client.search(cleanQuery, cat).getOrThrow()
                 }
 
                 is ThrottledException -> {
@@ -31,12 +33,26 @@ class DdunlimitednetIndexer(
                 else -> throw error
             }
         }
-        return linksToFeed(result.getOrThrow())
+        return linksToFeed(result.getOrThrow(), cat)
     }
 
-    override suspend fun capabilities(): Caps = Caps() // TODO: Configure caps
+    // TODO: Pagination
+    override suspend fun capabilities(): Caps = Caps(
+        categories = Caps.Categories(
+            category = listOf(
+                Caps.Categories.Category(
+                    id = 1577,
+                    name = "SerieTV",
+                ),
+                Caps.Categories.Category(
+                    id = 1572,
+                    name = "Movies",
+                )
+            )
+        )
+    )
 
-    private fun linksToFeed(links: List<String>): Feed {
+    private fun linksToFeed(links: List<String>, cat: List<Int>): Feed {
         log.info("Found {} links", links.size)
         log.trace("Links: {}", links)
         return Feed(
@@ -47,7 +63,9 @@ class DdunlimitednetIndexer(
                 ),
                 item = links
                     .mapNotNull { link -> runCatching { MagnetLink.fromEd2k(link) }.getOrNull() }
-                    .map { link ->
+                    .mapIndexed { idx, link ->
+                        // TODO: This is horrible, but we do not yet have the categories implemented in the scraper.
+                        val currentCategory = if (cat.isEmpty()) "1" else cat[idx % cat.size].toString()
                         Feed.Channel.Item(
                             title = link.name,
                             enclosure = Feed.Channel.Item.Enclosure(
@@ -55,7 +73,7 @@ class DdunlimitednetIndexer(
                                 length = 0
                             ),
                             attributes = listOf(
-                                Feed.Channel.Item.TorznabAttribute("category", "1"),
+                                Feed.Channel.Item.TorznabAttribute("category", currentCategory),
                                 Feed.Channel.Item.TorznabAttribute("seeders", "1"),
                                 Feed.Channel.Item.TorznabAttribute("peers", "1"),
                                 Feed.Channel.Item.TorznabAttribute("size", link.size.toString())
