@@ -33,35 +33,40 @@ data class Caps(
         @SerialName("search")
         data class Search(
             val available: String = "yes",
-            val supportedParams: String = "q"
+            val supportedParams: String = "q",
+            val searchEngine: String = "raw",
         )
 
         @Serializable
         @SerialName("tv-search")
         data class TvSearch(
-            val available: String = "no",
-            val supportedParams: String = "q"
+            val available: String = "yes",
+            val supportedParams: String = "q",
+            val searchEngine: String = "raw",
         )
 
         @Serializable
         @SerialName("movie-search")
         data class MovieSearch(
             val available: String = "no",
-            val supportedParams: String = "q"
+            val supportedParams: String = "q",
+            val searchEngine: String = "raw",
         )
 
         @Serializable
         @SerialName("audio-search")
         data class AudioSearch(
             val available: String = "no",
-            val supportedParams: String = "q"
+            val supportedParams: String = "q",
+            val searchEngine: String = "raw",
         )
 
         @Serializable
         @SerialName("book-search")
         data class BookSearch(
             val available: String = "no",
-            val supportedParams: String = "q"
+            val supportedParams: String = "q",
+            val searchEngine: String = "raw",
         )
     }
 
