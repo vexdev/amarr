@@ -12,7 +12,7 @@ dependencyResolutionManagement {
         create("libs") {
             // Versions
             version("ktor", "2.3.5")
-            version("kotlin", "1.9.20")
+            version("kotlin", "1.9.21")
             version("bt", "1.10")
             version("kotest", "5.8.0")
 
