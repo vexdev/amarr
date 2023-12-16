@@ -126,7 +126,7 @@ data class Preferences(
     val rss_processing_enabled: Boolean = false,
     val rss_refresh_interval: Int = 30,
     val rss_smart_episode_filters: String = "s(\\d+)e(\\d+)\n(\\d+)x(\\d+)\n(\\d{4}[.\\-]\\d{1,2}[.\\-]\\d{1,2})\n(\\d{1,2}[.\\-]\\d{1,2}[.\\-]\\d{4})",
-    val save_path: String = "/media/usb-luca/Downloads",
+    val save_path: String,
     val save_path_changed_tmm_enabled: Boolean = false,
     val save_resume_data_interval: Int = 60,
     val schedule_from_hour: Int = 8,

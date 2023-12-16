@@ -23,7 +23,7 @@ fun Application.torrentApi(amuleClient: AmuleClient, categoryStore: CategoryStor
             call.respondText("Ok.")
         }
         get("/api/v2/app/preferences") {
-            call.respond(Preferences())
+            call.respond(Preferences(save_path = finishedPath))
         }
         post("/api/v2/torrents/add") {
             val params = call.receiveParameters()
