@@ -39,17 +39,18 @@ The container exposes the port 8080, which is the port where amarr will expose t
 ### Example docker-compose.yml
 
 ```yaml
-amarr:
-  image: vexdev/amarr:latest
-  container_name: amarr
-  environment:
-    - AMULE_HOST=aMule
-    - AMULE_PORT=4712
-    - AMULE_PASSWORD=secret
-  volumes:
-    - /path/to/amarr/config:/config
-  ports:
-    - 8080:8080
+services:
+  amarr:
+    image: vexdev/amarr:latest
+    container_name: amarr
+    environment:
+      - AMULE_HOST=aMule
+      - AMULE_PORT=4712
+      - AMULE_PASSWORD=secret
+    volumes:
+      - /path/to/amarr/config:/config
+    ports:
+      - 8080:8080
 ```
 
 ## Radarr/Sonarr configuration (2 easy steps)
