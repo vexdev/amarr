@@ -41,7 +41,7 @@ data class Caps(
         @SerialName("tv-search")
         data class TvSearch(
             val available: String = "yes",
-            val supportedParams: String = "q",
+            val supportedParams: String = "q,season,ep",
             val searchEngine: String = "raw",
         )
 
