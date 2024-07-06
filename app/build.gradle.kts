@@ -44,6 +44,16 @@ tasks.named<Test>("test") {
 jib {
     from {
         image = "openjdk:17-jdk-slim"
+        platforms {
+            platform {
+                architecture = "amd64"
+                os = "linux"
+            }
+            platform {
+                architecture = "arm64"
+                os = "linux"
+            }
+        }
     }
     to {
         image = "vexdev/amarr"
