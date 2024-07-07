@@ -12,6 +12,16 @@ Makes use of [jaMule](https://github.com/vexdev/jaMule) to connect to aMule, whi
 
 Amarr has been especially tested with the latest released version of [Adunanza](https://www.adunanza.net/).
 
+## Pre-requisites
+
+- [aMule](https://www.amule.org/) version **2.3.1** to **2.3.3** running and configured
+- [Sonarr](https://sonarr.tv/) or [Radarr](https://radarr.video/) running and configured
+
+**Amarr does not come with its own amule installation**, you need to have it running and configured.
+One way to do this is by using the [Amule Docker image from ngosang](https://github.com/ngosang/docker-amule).
+Or the [Adunanza Docker image from m4dfry](https://github.com/m4dfry/amule-adunanza-docker).
+Or again you could run aMule in a VM or in a physical machine.
+
 ## Installation
 
 Amarr runs as a docker container. You can find it in [Docker Hub](https://hub.docker.com/r/vexdev/amarr).
