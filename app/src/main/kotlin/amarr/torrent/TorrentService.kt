@@ -9,6 +9,7 @@ import jamule.AmuleClient
 import jamule.model.AmuleTransferringFile
 import jamule.model.DownloadCommand
 import jamule.model.FileStatus
+import kotlin.io.path.Path
 
 class TorrentService(
     private val amuleClient: AmuleClient,
@@ -111,9 +112,20 @@ class TorrentService(
     }
 
     @OptIn(ExperimentalStdlibApi::class)
-    fun deleteTorrent(hashes: List<String>, deleteFiles: String?) = hashes.forEach { hash ->
-        amuleClient.sendDownloadCommand(hash.hexToByteArray(), DownloadCommand.DELETE)
-        categoryStore.delete(hash)
+    fun deleteTorrent(hashes: List<String>, deleteFiles: String?) {
+        val downloadingFiles = amuleClient
+            .getDownloadQueue()
+            .getOrThrow()
+        hashes.forEach { hash ->
+            if (downloadingFiles.any { it.fileHashHexString == hash }) {
+                amuleClient.sendDownloadCommand(hash.hexToByteArray(), DownloadCommand.DELETE)
+            } else if (deleteFiles == "true") {
+                deleteSharedFileByHash(hash)
+            } else {
+                log.error("File with hash $hash not found in downloading files")
+            }
+            categoryStore.delete(hash)
+        }
     }
 
     @OptIn(ExperimentalStdlibApi::class)
@@ -139,6 +151,14 @@ class TorrentService(
                 seeding_time = 0,
             )
         }
+
+    private fun deleteSharedFileByHash(hash: String) = amuleClient
+        .getSharedFiles()
+        .getOrThrow()
+        .firstOrNull { it.fileHashHexString == hash }
+        ?.filePath
+        ?.let { Path(it).toFile().delete() }
+        ?: log.error("File with hash $hash not found in shared files")
 
     private fun nonAmarrLink(url: String): Exception {
         log.error(

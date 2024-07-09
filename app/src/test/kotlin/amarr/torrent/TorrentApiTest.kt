@@ -15,11 +15,13 @@ import io.ktor.server.testing.*
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import jamule.AmuleClient
 import jamule.model.AmuleTransferringFile
 import jamule.model.DownloadCommand
 import jamule.model.FileStatus
 import kotlinx.serialization.json.Json
+import java.nio.file.Files
 
 class TorrentApiTest : StringSpec({
     val amuleClient = mockk<AmuleClient>()
@@ -117,21 +119,69 @@ class TorrentApiTest : StringSpec({
         }
     }
 
-    "should delete torrent" {
+    "should delete torrent when downloading" {
         testApplication {
             application {
                 torrentApi(amuleClient, categoryStore, finishedPath)
                 configureForTest()
             }
+            categoryStore.store("test", testMagnetLink.amuleHexHash())
             every {
                 amuleClient.sendDownloadCommand(testMagnetHash, DownloadCommand.DELETE)
             } returns Result.success(Unit)
+            every {
+                amuleClient.getDownloadQueue()
+            } returns Result.success(
+                listOf(
+                    MockTransferringFile(
+                        fileHashHexString = testMagnetLink.amuleHexHash(),
+                        fileName = testMagnetLink.name,
+                        sizeFull = testMagnetLink.size,
+                    )
+                )
+            )
             client.submitForm(formParameters = Parameters.build {
                 append("hashes", testMagnetLink.amuleHexHash())
-                append("deleteFiles", "test")
+                append("deleteFiles", "true")
             }, url = "/api/v2/torrents/delete").apply {
                 this.status shouldBe HttpStatusCode.OK
             }
+            verify { amuleClient.sendDownloadCommand(testMagnetHash, DownloadCommand.DELETE) }
+            categoryStore.getCategory(testMagnetLink.amuleHexHash()) shouldBe null
+        }
+    }
+
+    "should delete file when not downloading" {
+        testApplication {
+            application {
+                torrentApi(amuleClient, categoryStore, finishedPath)
+                configureForTest()
+            }
+            categoryStore.store("test", testMagnetLink.amuleHexHash())
+            every {
+                amuleClient.sendDownloadCommand(testMagnetHash, DownloadCommand.DELETE)
+            } returns Result.success(Unit)
+            val randomTemporaryFile = Files.createTempFile("test", "test")
+            every { amuleClient.getSharedFiles() } returns Result.success(
+                listOf(
+                    MockTransferringFile(
+                        fileHashHexString = testMagnetLink.amuleHexHash(),
+                        fileName = testMagnetLink.name,
+                        sizeFull = testMagnetLink.size,
+                        filePath = randomTemporaryFile.toAbsolutePath().toString()
+                    )
+                )
+            )
+            every { amuleClient.getDownloadQueue() } returns Result.success(emptyList())
+            client.submitForm(formParameters = Parameters.build {
+                append("hashes", testMagnetLink.amuleHexHash())
+                append("deleteFiles", "true")
+            }, url = "/api/v2/torrents/delete").apply {
+                this.status shouldBe HttpStatusCode.OK
+            }
+            verify(exactly = 0) { amuleClient.sendDownloadCommand(testMagnetHash, DownloadCommand.DELETE) }
+            categoryStore.getCategory(testMagnetLink.amuleHexHash()) shouldBe null
+            Files.exists(randomTemporaryFile) shouldBe false
         }
     }
 
