@@ -7,6 +7,7 @@ import amarr.torznab.model.Feed.Channel.Item
 import io.ktor.util.logging.*
 import jamule.AmuleClient
 import jamule.response.SearchResultsResponse.SearchFile
+import java.text.Normalizer
 
 class AmuleIndexer(private val amuleClient: AmuleClient, private val log: Logger) : Indexer {
 
@@ -16,10 +17,26 @@ class AmuleIndexer(private val amuleClient: AmuleClient, private val log: Logger
             log.debug("Empty query, returning empty response")
             return EMPTY_QUERY_RESPONSE
         }
-        return buildFeed(amuleClient.searchSync(query).getOrThrow().files, offset, limit)
+        val cleanQuery = normalizeSearchQuery(query)
+        return buildFeed(amuleClient.searchSync(cleanQuery).getOrThrow().files.filter(::isRelevantVideoResult), offset, limit)
     }
 
     override suspend fun capabilities(): Caps = Caps()
+
+    private fun isRelevantVideoResult(file: SearchFile): Boolean {
+        val extension = file.fileName.substringAfterLast('.', missingDelimiterValue = "").lowercase()
+        if (extension in EXCLUDED_EXTENSIONS) {
+            return false
+        }
+        return extension in VIDEO_EXTENSIONS || (extension.isBlank() && file.sizeFull >= MIN_VIDEO_SIZE_BYTES)
+    }
+
+    private fun normalizeSearchQuery(query: String): String =
+        Normalizer.normalize(query, Normalizer.Form.NFD)
+            .replace(Regex("\\p{InCombiningDiacriticalMarks}+"), "")
+            .replace(Regex("[^\\w\\s]+"), " ")
+            .replace(Regex("\\s+"), " ")
+            .trim()
 
     private fun buildFeed(items: List<SearchFile>, offset: Int, limit: Int) = Feed(
         channel = Feed.Channel(
@@ -49,6 +66,37 @@ class AmuleIndexer(private val amuleClient: AmuleClient, private val log: Logger
     )
 
     companion object {
+        private val VIDEO_EXTENSIONS = setOf(
+            "avi",
+            "m2ts",
+            "m4v",
+            "mkv",
+            "mov",
+            "mp4",
+            "mpeg",
+            "mpg",
+            "ts",
+            "webm",
+            "wmv"
+        )
+        private val EXCLUDED_EXTENSIONS = setOf(
+            "ass",
+            "cue",
+            "gif",
+            "jpg",
+            "jpeg",
+            "m3u",
+            "mp3",
+            "nfo",
+            "png",
+            "rar",
+            "srt",
+            "sub",
+            "txt",
+            "zip"
+        )
+        private const val MIN_VIDEO_SIZE_BYTES = 50L * 1024L * 1024L
+
         private val EMPTY_QUERY_RESPONSE = Feed(
             channel = Feed.Channel(
                 response = Feed.Channel.Response(offset = 0, total = 1),

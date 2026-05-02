@@ -46,7 +46,7 @@ class AmuleIndexerTest : StringSpec({
 
     "when queried calls amule client" {
         val searchFile = SearchFile(
-            fileName = "test",
+            fileName = "test.mkv",
             hash = byteArrayOf(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15),
             sizeFull = 1000,
             completeSourceCount = 1,
@@ -61,14 +61,46 @@ class AmuleIndexerTest : StringSpec({
         result.channel.response.offset shouldBe 0
         result.channel.item.size shouldBe 1
         val item = result.channel.item[0]
-        item.title shouldBe "test"
-        item.enclosure.url shouldBe MagnetLink.forAmarr(searchFile.hash, "test", searchFile.sizeFull).toString()
+        item.title shouldBe "test.mkv"
+        item.enclosure.url shouldBe MagnetLink.forAmarr(searchFile.hash, "test.mkv", searchFile.sizeFull).toString()
         item.enclosure.length shouldBe 1000
         item.attributes.size shouldBe 4
         item.attributes shouldContain TorznabAttribute("category", "1")
         item.attributes shouldContain TorznabAttribute("size", "1000")
         item.attributes shouldContain TorznabAttribute("seeders", "1")
         item.attributes shouldContain TorznabAttribute("peers", "2")
+    }
+
+    "should filter noisy non-video search results" {
+        val videoFile = SearchFile(
+            fileName = "matrix.mkv",
+            hash = byteArrayOf(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15),
+            sizeFull = 1000,
+            completeSourceCount = 1,
+            sourceCount = 2,
+            downloadStatus = SearchResultsResponse.SearchFileDownloadStatus.NEW,
+        )
+        val nfoFile = videoFile.copy(fileName = "matrix.nfo")
+        val zipFile = videoFile.copy(fileName = "matrix.zip")
+        val mp3File = videoFile.copy(fileName = "matrix.mp3")
+        every { mockClient.searchSync(any()) } returns Result.success(
+            SearchResultsResponse(listOf(videoFile, nfoFile, zipFile, mp3File))
+        )
+
+        val indexer = AmuleIndexer(mockClient, logger)
+        val result = indexer.search("matrix", 0, 1000, listOf())
+
+        result.channel.response.total shouldBe 1
+        result.channel.item.map { it.title } shouldBe listOf("matrix.mkv")
+    }
+
+    "should normalize query accents and punctuation before searching amule" {
+        every { mockClient.searchSync(any()) } returns Result.success(SearchResultsResponse(emptyList()))
+
+        val indexer = AmuleIndexer(mockClient, logger)
+        indexer.search("C'est un complot", 0, 1000, listOf())
+
+        verify { mockClient.searchSync("C est un complot") }
     }
 
 })
