@@ -7,6 +7,7 @@ import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
+import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
@@ -21,6 +22,9 @@ import jamule.model.AmuleTransferringFile
 import jamule.model.DownloadCommand
 import jamule.model.FileStatus
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import java.nio.file.Files
 
 class TorrentApiTest : StringSpec({
@@ -212,9 +216,11 @@ class TorrentApiTest : StringSpec({
             every { amuleClient.getSharedFiles() } returns Result.success(emptyList())
             client.get {
                 url("/api/v2/torrents/info")
-                parameter("category", "test")
             }.apply {
                 this.status shouldBe HttpStatusCode.OK
+                val torrent = Json.parseToJsonElement(bodyAsText()).jsonArray.single().jsonObject
+                torrent["ratio"]!!.jsonPrimitive.content shouldBe "1.0"
+                torrent["seeding_time"]!!.jsonPrimitive.content shouldBe "1"
             }
         }
     }
@@ -232,6 +238,8 @@ class TorrentApiTest : StringSpec({
                 parameter("hash", testMagnetLink.amuleHexHash())
             }.apply {
                 this.status shouldBe HttpStatusCode.OK
+                val properties = Json.parseToJsonElement(bodyAsText()).jsonObject
+                properties["seeding_time"]!!.jsonPrimitive.content shouldBe "1"
             }
         }
     }

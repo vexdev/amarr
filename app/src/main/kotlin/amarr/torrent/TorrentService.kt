@@ -148,7 +148,7 @@ class TorrentService(
             TorrentProperties(
                 hash = it.hash,
                 save_path = it.save_path,
-                seeding_time = 0,
+                seeding_time = it.seeding_time.toLong(),
             )
         }
 

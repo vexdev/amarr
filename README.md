@@ -35,6 +35,7 @@ AMULE_PASSWORD: secret # The password to connect to aMule
 
 Optional parameters:
 AMULE_FINISHED_PATH: /finished # The directory where aMule will download the finished files
+AMARR_PORT: 8080 # The port where amarr will listen, defaults to 8080
 AMARR_LOG_LEVEL: INFO # The log level of amarr, defaults to INFO
 ```
 

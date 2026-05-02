@@ -1,6 +1,6 @@
 plugins {
     // Apply the foojay-resolver plugin to allow automatic download of JDKs
-    id("org.gradle.toolchains.foojay-resolver-convention") version "0.7.0"
+    id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
 
 rootProject.name = "amarr"
@@ -11,10 +11,10 @@ dependencyResolutionManagement {
     versionCatalogs {
         create("libs") {
             // Versions
-            version("ktor", "2.3.7")
-            version("kotlin", "1.9.21")
+            version("ktor", "3.4.2")
+            version("kotlin", "2.3.20")
             version("bt", "1.10")
-            version("kotest", "5.8.0")
+            version("kotest", "6.1.11")
 
             // Libraries
             library("ktor-server-core", "io.ktor", "ktor-server-core").versionRef("ktor")
@@ -31,19 +31,19 @@ dependencyResolutionManagement {
             library("ktor-client-logging", "io.ktor", "ktor-client-logging").versionRef("ktor")
             library("ktor-client-mock", "io.ktor", "ktor-client-mock").versionRef("ktor")
             library("jamule", "com.vexdev", "jamule").version("1.0.3")
-            library("guava", "com.google.guava", "guava").version("32.1.3-jre")
+            library("guava", "com.google.guava", "guava").version("33.5.0-jre")
             library("kotest-runner-junit5", "io.kotest", "kotest-runner-junit5").versionRef("kotest")
             library("kotest-assertions-core", "io.kotest", "kotest-assertions-core").versionRef("kotest")
             library("kotest-property", "io.kotest", "kotest-property").versionRef("kotest")
-            library("mockk", "io.mockk", "mockk").version("1.13.8")
-            library("logback", "ch.qos.logback", "logback-classic").version("1.4.14")
+            library("mockk", "io.mockk", "mockk").version("1.14.9")
+            library("logback", "ch.qos.logback", "logback-classic").version("1.5.32")
             library("kotlin-test-junit", "org.jetbrains.kotlin", "kotlin-test-junit").versionRef("kotlin")
-            library("commons-text", "org.apache.commons", "commons-text").version("1.11.0")
+            library("commons-text", "org.apache.commons", "commons-text").version("1.15.0")
 
             // Plugins
             plugin("kotlin-jvm", "org.jetbrains.kotlin.jvm").versionRef("kotlin")
             plugin("kotlin-serialization", "org.jetbrains.kotlin.plugin.serialization").versionRef("kotlin")
-            plugin("jib", "com.google.cloud.tools.jib").version("3.4.0")
+            plugin("jib", "com.google.cloud.tools.jib").version("3.5.3")
 
             // Bundles
             bundle("kotest", listOf("kotest-runner-junit5", "kotest-assertions-core", "kotest-property"))

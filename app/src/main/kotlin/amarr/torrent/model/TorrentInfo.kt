@@ -28,9 +28,9 @@ data class TorrentInfo(
     // Following are parsed by Radarr but not handled by amarr yet
     // TODO: Handle these values
     val content_path: String = "", // Subpath where this torrent's data is stored. Only available for multifile torrents
-    val ratio: Double = 0.0, // Torrent share ratio. Max ratio value: 9999.
+    val ratio: Double = 1.0, // Torrent share ratio. Max ratio value: 9999.
     val ratio_limit: Int = -2, // Max share ratio until torrent is stopped from seeding/uploading -2 = Use global share ratio limit -1 = Unlimited
-    val seeding_time: Int = 0, // Total time (seconds) this torrent has been seeding
+    val seeding_time: Int = 1, // Total time (seconds) this torrent has been seeding
     val seeding_time_limit: Int = -2, // Max seeding time (seconds) until torrent is stopped from seeding -2 = Use global seeding time limit -1 = Unlimited
 
     // TODO This is not parsed by Radarr but should be handled by amarr
